@@ -1,0 +1,108 @@
+package org.Commands;
+
+import org.Modules.ClientCommunicationModule;
+import org.Modules.ConsoleInputModule;
+import org.Modules.ConsoleOutputModule;
+import org.apache.commons.lang3.math.NumberUtils;
+import org.example.DataContainers.AdvertisementData;
+import org.example.DataContainers.UserData;
+import org.example.ServerCommands.ServerCommand;
+import org.example.ServerCommands.ServerDeleteAdvertisementCommand;
+import org.example.ServerCommands.ServerSearchCommand;
+
+import java.util.Arrays;
+import java.util.Map;
+
+public class ConsoleShowAdvertisementCommand extends AbstractConsoleCommand {
+    private ConsoleInputModule inputModule;
+    private ConsoleOutputModule outputModule;
+    private ClientCommunicationModule communicationModule;
+
+    private Integer advertisementId = 0;
+
+    public ConsoleShowAdvertisementCommand(ConsoleInputModule inputModule, ConsoleOutputModule outputModule, ClientCommunicationModule communicationModule){
+        this.inputModule = inputModule;
+        this.outputModule = outputModule;
+        this.communicationModule = communicationModule;
+
+        this.necessaryArgs.put("advertisementId", false);
+    }
+
+    public void execute() {
+        ServerSearchCommand command = null;
+        try {
+            ServerCommand undefinedCommand = communicationModule.executeCommand(new ServerSearchCommand(this.advertisementId, new String[0], new String[0], 0, null));
+            if (undefinedCommand.getError() != null) {
+                throw undefinedCommand.getError();
+            } else {
+                command = (ServerSearchCommand) undefinedCommand;
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        if (command.getFoundAdvertisements() != null && !Arrays.equals(command.getFoundAdvertisements(), new AdvertisementData[]{})) {
+            for (AdvertisementData advertisement: command.getFoundAdvertisements()) {
+                outputModule.outputLine("(" + advertisement.id + ")");
+                outputModule.outputLine(advertisement.title);
+                outputModule.outputLine("Описание:");
+                outputModule.outputLine(advertisement.description);
+                outputModule.outputLine("Цена: " + advertisement.price);
+                outputModule.outputLine("Контакты: " + advertisement.contacts);
+            }
+        } else {
+            outputModule.outputLine("Объявление с таким id не найдено!");
+        }
+    }
+
+    public void putData(Map<String, String> data) {
+        if (data.containsKey("advertisementId")) {
+            if (NumberUtils.isCreatable(data.get("advertisementId"))) {
+                necessaryArgs.put("advertisementId", true);
+                advertisementId = NumberUtils.toInt(data.get("advertisementId"));
+            } else {
+                outputModule.outputLine(data.get("advertisementId") + " не является числом");
+            }
+        }
+    }
+
+    public void collectData() {
+        Boolean isFilledFlag = true;
+        for (String arg: this.necessaryArgs.keySet()) {
+            if (!this.necessaryArgs.get(arg)) {
+                isFilledFlag = false;
+                break;
+            }
+        }
+        if (!isFilledFlag) {
+            outputModule.outputLine("Заполните обязательные аргументы:");
+            while (!this.necessaryArgs.get("advertisementId")) {
+                String line = inputModule.inputLineWithDescription("Введите id просматриваемого объявления: ");
+                if (line.equals("0")) {
+                    necessaryArgs.put("advertisementId", true);
+                    this.advertisementId = 0;
+                    break;
+                }
+                if (NumberUtils.isCreatable(line)) {
+                    if (NumberUtils.toInt(line) >= 0) {
+                        necessaryArgs.put("advertisementId", true);
+                        advertisementId = NumberUtils.toInt(line);
+                    } else {
+                        outputModule.outputLine(line + " меньше нуля");
+                    }
+                } else {
+                    outputModule.outputLine(line + " не является числом");
+                }
+            }
+        }
+    }
+
+    public void clear() {
+        this.necessaryArgs.replaceAll((a, v) -> false);
+        this.unnecessaryArgs.replaceAll((a, v) -> false);
+        this.advertisementId = 0;
+    }
+
+    public String getManual(){
+        return "Показывает подробную информацию об объявлении по id. \nСписок аргументов:\nadvertisementId - id объявления (натуральное число)";
+    }
+}
