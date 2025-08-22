@@ -12,7 +12,6 @@ import java.util.Map;
 
 public class ConsoleRegisterCommand extends AbstractConsoleCommand {
     private ConsoleInputModule inputModule;
-    private ConsoleOutputModule outputModule;
     private ClientCommunicationModule communicationModule;
 
     private String nickname;
@@ -29,17 +28,15 @@ public class ConsoleRegisterCommand extends AbstractConsoleCommand {
         this.necessaryArgs.put("password", false);
     }
 
-    public void execute() {
+    public void execute() throws Exception {
         ServerRegisterCommand command = null;
-        try {
-            ServerCommand undefinedCommand = communicationModule.executeCommand(new ServerRegisterCommand(this.nickname, this.mailAddress, this.password));
-            if (undefinedCommand.getError() != null) {
-                throw undefinedCommand.getError();
-            } else {
-                command = (ServerRegisterCommand) undefinedCommand;
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        ServerCommand undefinedCommand = communicationModule.executeCommand(new ServerRegisterCommand(this.nickname, this.mailAddress, this.password));
+        if (undefinedCommand.getError() != null) {
+            throw undefinedCommand.getError();
+        } else if (undefinedCommand.getErrorMessage() != null) {
+            throw new Exception(undefinedCommand.getErrorMessage());
+        } else {
+            command = (ServerRegisterCommand) undefinedCommand;
         }
         if (command.getSuccessState()) {
             outputModule.outputLine("Пользователь " + this.nickname + " успешно зарегистрирован!");

@@ -7,7 +7,6 @@ import java.util.Map;
 
 public class ConsoleManualCommand extends AbstractConsoleCommand {
     private ConsoleInputModule inputModule;
-    private ConsoleOutputModule outputModule;
     private final Map<String, AbstractConsoleCommand> consoleCommandObjects;
 
     private String commandName;

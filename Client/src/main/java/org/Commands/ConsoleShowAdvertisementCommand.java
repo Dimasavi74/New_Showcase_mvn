@@ -15,7 +15,6 @@ import java.util.Map;
 
 public class ConsoleShowAdvertisementCommand extends AbstractConsoleCommand {
     private ConsoleInputModule inputModule;
-    private ConsoleOutputModule outputModule;
     private ClientCommunicationModule communicationModule;
 
     private Integer advertisementId = 0;
@@ -28,17 +27,15 @@ public class ConsoleShowAdvertisementCommand extends AbstractConsoleCommand {
         this.necessaryArgs.put("advertisementId", false);
     }
 
-    public void execute() {
+    public void execute() throws Exception {
         ServerSearchCommand command = null;
-        try {
-            ServerCommand undefinedCommand = communicationModule.executeCommand(new ServerSearchCommand(this.advertisementId, new String[0], new String[0], 0, null));
-            if (undefinedCommand.getError() != null) {
-                throw undefinedCommand.getError();
-            } else {
-                command = (ServerSearchCommand) undefinedCommand;
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        ServerCommand undefinedCommand = communicationModule.executeCommand(new ServerSearchCommand(this.advertisementId, new String[0], new String[0], 0, null));
+        if (undefinedCommand.getError() != null) {
+            throw undefinedCommand.getError();
+        } else if (undefinedCommand.getErrorMessage() != null) {
+            throw new Exception(undefinedCommand.getErrorMessage());
+        } else {
+            command = (ServerSearchCommand) undefinedCommand;
         }
         if (command.getFoundAdvertisements() != null && !Arrays.equals(command.getFoundAdvertisements(), new AdvertisementData[]{})) {
             for (AdvertisementData advertisement: command.getFoundAdvertisements()) {

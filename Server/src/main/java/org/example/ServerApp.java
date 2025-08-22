@@ -19,7 +19,7 @@ public class ServerApp {
             Set<Task> tasks = communicationModule.checkTasks();
             for (Task task: tasks) {
                 System.out.println("Задача №" + task.getId() + " в обработке");
-                task.run();
+                executorService.execute(task);
             }
         }
     }

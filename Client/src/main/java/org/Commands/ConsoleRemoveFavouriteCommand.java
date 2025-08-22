@@ -12,7 +12,6 @@ import java.util.Map;
 
 public class ConsoleRemoveFavouriteCommand extends AbstractConsoleCommand {
     private ConsoleInputModule inputModule;
-    private ConsoleOutputModule outputModule;
     private ClientCommunicationModule communicationModule;
     private UserData user;
 
@@ -27,21 +26,19 @@ public class ConsoleRemoveFavouriteCommand extends AbstractConsoleCommand {
         this.necessaryArgs.put("advertisementId", false);
     }
 
-    public void execute() {
+    public void execute() throws Exception {
         ServerDeleteAdvertisementCommand command = null;
         if (!this.user.isLogged) {
             outputModule.outputLine("Для удаления объявлений из понравившихся необходимо выполнить вход в систему (команда /login)");
             return;
         }
-        try {
-            ServerCommand undefinedCommand = communicationModule.executeCommand(new ServerDeleteAdvertisementCommand(advertisementId, this.user));
-            if (undefinedCommand.getError() != null) {
-                throw undefinedCommand.getError();
-            } else {
-                command = (ServerDeleteAdvertisementCommand) undefinedCommand;
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        ServerCommand undefinedCommand = communicationModule.executeCommand(new ServerDeleteAdvertisementCommand(advertisementId, this.user));
+        if (undefinedCommand.getError() != null) {
+            throw undefinedCommand.getError();
+        } else if (undefinedCommand.getErrorMessage() != null) {
+            throw new Exception(undefinedCommand.getErrorMessage());
+        } else {
+            command = (ServerDeleteAdvertisementCommand) undefinedCommand;
         }
         if (command.getSuccessState()) {
             outputModule.outputLine("Объявление успешно удалено!");

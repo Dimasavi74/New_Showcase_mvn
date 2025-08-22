@@ -8,7 +8,6 @@ import java.util.Map;
 
 public class ConsoleLogoutCommand extends AbstractConsoleCommand {
     private UserData user;
-    private ConsoleOutputModule outputModule;
 
     public ConsoleLogoutCommand(ConsoleOutputModule outputModule, UserData user){
         this.user = user;

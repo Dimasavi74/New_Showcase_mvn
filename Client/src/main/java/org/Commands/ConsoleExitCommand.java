@@ -7,7 +7,6 @@ import java.util.Map;
 
 public class ConsoleExitCommand extends AbstractConsoleCommand {
     private ClientProperties properties;
-    private ConsoleOutputModule outputModule;
 
     public ConsoleExitCommand(ClientProperties properties, ConsoleOutputModule outputModule){
         this.properties = properties;

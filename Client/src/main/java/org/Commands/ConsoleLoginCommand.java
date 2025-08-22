@@ -6,12 +6,12 @@ import org.Modules.ConsoleOutputModule;
 import org.example.DataContainers.UserData;
 import org.example.ServerCommands.*;
 
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Map;
 
 public class ConsoleLoginCommand extends AbstractConsoleCommand {
     private ConsoleInputModule inputModule;
-    private ConsoleOutputModule outputModule;
     private ClientCommunicationModule communicationModule;
     private UserData user;
 
@@ -30,24 +30,15 @@ public class ConsoleLoginCommand extends AbstractConsoleCommand {
         this.necessaryArgs.put("password", false);
     }
 
-    public void execute() {
+    public void execute() throws Exception {
         ServerLoginCommand command = null;
-        try {
-            ServerCommand undefinedCommand = communicationModule.executeCommand(new ServerLoginCommand(this.nickname, this.mailAddress, this.password));
-            if (undefinedCommand.getError() != null) {
-                throw undefinedCommand.getError();
-            } else {
-                command = (ServerLoginCommand) undefinedCommand;
-            }
-        } catch (SQLException e) {
-            if (e.getMessage().equals("UserNotFound")) {
-                outputModule.outputLine("Такого пользователя не существует! Для регистрации используйте команду /register");
-            } else {
-                throw new RuntimeException(e);
-            }
-        }
-        catch (Exception e) {
-            throw new RuntimeException(e);
+        ServerCommand undefinedCommand = communicationModule.executeCommand(new ServerLoginCommand(this.nickname, this.mailAddress, this.password));
+        if (undefinedCommand.getError() != null) {
+            throw undefinedCommand.getError();
+        } else if (undefinedCommand.getErrorMessage() != null) {
+            throw new Exception(undefinedCommand.getErrorMessage());
+        } else {
+            command = (ServerLoginCommand) undefinedCommand;
         }
         if (command.getSuccessState()) {
             user.setAllData(this.nickname, this.mailAddress, this.password);

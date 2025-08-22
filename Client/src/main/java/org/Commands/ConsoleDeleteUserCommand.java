@@ -19,7 +19,6 @@ public class ConsoleDeleteUserCommand extends AbstractConsoleCommand {
 
     public ConsoleDeleteUserCommand(ConsoleInputModule inputModule, ConsoleOutputModule outputModule, ClientCommunicationModule communicationModule){
         this.inputModule = inputModule;
-        this.outputModule = outputModule;
         this.communicationModule = communicationModule;
 
         this.necessaryArgs.put("nickname", false);
@@ -27,17 +26,15 @@ public class ConsoleDeleteUserCommand extends AbstractConsoleCommand {
         this.necessaryArgs.put("password", false);
     }
 
-    public void execute() {
+    public void execute() throws Exception {
         ServerDeleteUserCommand command = null;
-        try {
-            ServerCommand undefinedCommand = communicationModule.executeCommand(new ServerDeleteUserCommand(this.nickname, this.mailAddress, this.password));
-            if (undefinedCommand.getError() != null) {
-                throw undefinedCommand.getError();
-            } else {
-                command = (ServerDeleteUserCommand) undefinedCommand;
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        ServerCommand undefinedCommand = communicationModule.executeCommand(new ServerDeleteUserCommand(this.nickname, this.mailAddress, this.password));
+        if (undefinedCommand.getError() != null) {
+            throw undefinedCommand.getError();
+        } else if (undefinedCommand.getErrorMessage() != null) {
+            throw new Exception(undefinedCommand.getErrorMessage());
+        } else {
+            command = (ServerDeleteUserCommand) undefinedCommand;
         }
         if (command.getSuccessState()) {
             outputModule.outputLine("Пользователь " + this.nickname + " успешно удален!");

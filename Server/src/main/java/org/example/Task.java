@@ -31,15 +31,12 @@ public class Task implements Runnable {
         if (key.isValid()) {
             if (key.isAcceptable()) {
                 doAccept();
-                blockedKeys.remove(key);
             }
             else if (key.isReadable()) {
                 doRead();
-                blockedKeys.remove(key);
             }
             else if (key.isWritable()) {
                 doWrite();
-                blockedKeys.remove(key);
             }
         }
     }
@@ -50,49 +47,34 @@ public class Task implements Runnable {
         ServerSocketChannel ssc = (ServerSocketChannel) key.channel();
         System.out.println("Канал: " + ssc);
         SocketChannel sc;
+        SelectionKey clientKey;
 
         try {
             sc = ssc.accept();
+            sc.configureBlocking(false);
+            System.out.println("Подключение удалось!");
+            System.out.println("Регистрируем ключ на чтение");
+            clientKey = sc.register(key.selector(), SelectionKey.OP_READ);
+            System.out.println("Ключ на чтение зарегистрирован!: " + clientKey);
+            ClientData data = new ClientData();
+            clientKey.attach(data);
+        }  catch (ClosedChannelException e) {
+            System.out.println("Канал закрыт, регистрация ключа на чтение невозможна!");
+            key.cancel();
+//            throw new RuntimeException(e); // !!! Убрать на игнорирование
+        } catch (CancelledKeyException e) {
+            System.out.println("Ключ отменен, регистрация на чтение невозможна!");
+            key.cancel();
+//            throw new RuntimeException(e); // !!! Убрать на игнорирование
         } catch (IOException e) {
             System.out.println("Подключение не удалось!");
             key.cancel();
+//            throw new RuntimeException(e); // !!!! Убрать на игнорирование
+        } finally {
             blockedKeys.remove(key);
-            throw new RuntimeException(e); // !!!! Убрать на игнорирование
-        }
-        System.out.println("Подключение удалось!");
-
-        try {
-            sc.configureBlocking(false);
-        } catch (IOException e) {
-            try {
-                sc.close();
-            } catch (IOException ignored) {}
-            key.cancel();
-            blockedKeys.remove(key);
-            throw new RuntimeException(e); // !!! Игнор
+            key.selector().wakeup();
         }
 
-        SelectionKey clientKey;
-        try {
-            System.out.println("Регистрируем ключ на чтение");
-            clientKey = sc.register(key.selector(), SelectionKey.OP_READ);
-        } catch (ClosedChannelException e) {
-            System.out.println("Канал закрыт, регистрация ключа на чтение невозможна! Канал: " + sc);
-            try {
-                sc.close();
-            } catch (IOException ignored) {}
-            key.cancel();
-            blockedKeys.remove(key);
-            throw new RuntimeException(e); // !!! Убрать на игнорирование
-        } catch (CancelledKeyException e) {
-            System.out.println("Ключ отменен, регистрация на чтение невозможна!");
-            blockedKeys.remove(key);
-            throw new RuntimeException(e); // !!! Убрать на игнорирование
-        }
-        System.out.println("Ключ на чтение зарегистрирован!: " + clientKey);
-        ClientData data = new ClientData();
-        clientKey.attach(data);
-        key.selector().wakeup();
     }
 
     public void doRead() {
@@ -101,20 +83,15 @@ public class Task implements Runnable {
         SocketChannel sc = (SocketChannel) key.channel();
         System.out.println("Канал: " + sc);
         ClientData data = (ClientData) key.attachment();
-        System.out.println("Привязаный объект: " + data);
+        System.out.println("Привязанный объект: " + data);
         ServerCommand command;
 
         ByteBuffer lengthBuffer;
-        ByteBuffer dataBuffer;
+        ByteBuffer dataBuffer = ByteBuffer.allocate(0);
         try {
-            // Чтение размера данных (4 байта)
             System.out.println("Начато чтение данных клиента");
             lengthBuffer = ByteBuffer.allocate(READING_DATA_SIZE_BUFFER_CAPACITY);
-            try {
-                sc.read(lengthBuffer);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+            sc.read(lengthBuffer);
             lengthBuffer.flip();
             int dataLength = lengthBuffer.getInt();
             System.out.println("Размер входящих данных: " + dataLength);
@@ -126,45 +103,43 @@ public class Task implements Runnable {
         } catch (IOException e) {
             command = new ServerEmptyCommand();
             command.setError(e);
-            throw new RuntimeException("Ошибка при получении данных клиента", e); // !!! Убрать на игнорирование!
+//            throw new RuntimeException("Ошибка при получении данных клиента", e); // !!! Убрать на игнорирование!
         }
-
-        // Десериализация
 
         try (ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(dataBuffer.array()))) {
             command = (ServerCommand) ois.readObject();
+            System.out.println("Назначаем бд-менеджер");
+            command.setBdManager(bdManager);
+            System.out.println("Исполняем команду");
+            command.execute();
+            System.out.println("Ошибка при исполнении: " + command.getError());
+            data.setCommand(command);
             System.out.println("Получен объект: " + command);
         } catch (ClassNotFoundException | IOException e) {
             command = new ServerEmptyCommand();
             command.setError(e);
-            throw new RuntimeException("Ошибка при десериализвции объекта на сервере", e); // !!! Убрать на игнорирование!
+//            throw new RuntimeException("Ошибка при десериализации объекта на сервере", e); // !!! Убрать на игнорирование!
         }
-        System.out.println("Назначаем бд-менеджер");
-        command.setBdManager(bdManager);
-        System.out.println("Исполняем команду");
-        command.execute();
-        System.out.println("Ошибка при исполнении: " + command.getError());
-        data.setCommand(command);
+
 
         SelectionKey clientKey;
         try {
             System.out.println("Регистрируем ключ на запись");
             clientKey = sc.register(key.selector(), SelectionKey.OP_WRITE);
+            clientKey.attach(data);
+            System.out.println("Ключ на запись зарегистрирован!: " + clientKey);
         } catch (ClosedChannelException e) {
             System.out.println("Канал закрыт, регистрация ключа на запись невозможна! Канал: " + sc);
             key.cancel();
-            blockedKeys.remove(key);
-            throw new RuntimeException(e); // !!! Убрать на игнорирование!
+//            throw new RuntimeException(e); // !!! Убрать на игнорирование!
         } catch (CancelledKeyException e) {
             System.out.println("Ключ отменен, регистрация на запись невозможна!");
-            try {
-                sc.close();
-            } catch (IOException ignored) {}
+            key.cancel();
+//            throw new RuntimeException(e); // !!! Убрать на игнорирование
+        } finally {
             blockedKeys.remove(key);
-            throw new RuntimeException(e); // !!! Убрать на игнорирование
+            key.selector().wakeup();
         }
-        System.out.println("Ключ на запись зарегистрирован!: " + clientKey);
-        clientKey.attach(data);
     }
 
     public void doWrite() {
@@ -173,7 +148,7 @@ public class Task implements Runnable {
         SocketChannel sc = (SocketChannel) key.channel();
         System.out.println("Канал: " + sc);
         ClientData data = (ClientData) key.attachment();
-        System.out.println("Привязаный объект: " + data);
+        System.out.println("Привязанный объект: " + data);
 
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
              ObjectOutputStream oos = new ObjectOutputStream(baos)) {
@@ -190,13 +165,15 @@ public class Task implements Runnable {
             while (buffer.hasRemaining()) {
                 sc.write(buffer);
             }
-        } catch (IOException e) {
-            throw new RuntimeException(e); // !!! Убрать на игнорирование!
-        }
-        try {
+            System.out.println("Запись выполнена успешно!");
             sc.close();
-        } catch (IOException ignored) {}
-        key.cancel();
-        blockedKeys.remove(key);
+        } catch (IOException e) {
+            System.out.println("Ошибка при отправке!");
+//            throw new RuntimeException(e); // !!! Убрать на игнорирование!
+        } finally {
+            key.cancel();
+            blockedKeys.remove(key);
+            key.selector().wakeup();
+        }
     }
 }

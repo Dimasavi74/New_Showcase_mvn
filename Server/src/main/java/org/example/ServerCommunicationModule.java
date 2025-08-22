@@ -6,6 +6,7 @@ import java.nio.channels.ClosedChannelException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -13,7 +14,7 @@ public class ServerCommunicationModule {
     Selector selector;
     BdManager bdManager;
     Integer counter = 0;
-    Set<SelectionKey> blockedKeys = new HashSet<>();
+    Set<SelectionKey> blockedKeys = Collections.synchronizedSet(new HashSet<>());
 
     public ServerCommunicationModule(BdManager bdManager, int port) {
         this.bdManager = bdManager;
@@ -42,14 +43,16 @@ public class ServerCommunicationModule {
             selector.select();
         } catch (IOException e) {
             System.out.println("Ошибка при вызове select()!");
-            throw new RuntimeException(e);
+//            throw new RuntimeException(e);
         }
         Set<SelectionKey> keys = selector.selectedKeys();
-        System.out.println("Эти ключи нашел селектор:");
         Set<Task> tasks = new HashSet<>();
         for (var iter = keys.iterator(); iter.hasNext(); ) {
             SelectionKey key = iter.next();
-            System.out.println(key + " isAcceptable: " + key.isAcceptable() + " isReadable: " + key.isReadable() + " isWriteable: " + key.isWritable());
+            if (blockedKeys.contains(key)) {
+                iter.remove();
+                continue;
+            }
             iter.remove();
             Task task = new Task(counter++, key, bdManager, blockedKeys);
             System.out.println("Задача №" + (counter - 1) + " создана");

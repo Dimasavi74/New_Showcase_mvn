@@ -5,7 +5,6 @@ import org.Modules.ConsoleOutputModule;
 import java.util.Map;
 
 public class ConsoleHelpCommand extends AbstractConsoleCommand {
-    private ConsoleOutputModule outputModule;
 
     public ConsoleHelpCommand(ConsoleOutputModule outputModule) {
         this.outputModule = outputModule;

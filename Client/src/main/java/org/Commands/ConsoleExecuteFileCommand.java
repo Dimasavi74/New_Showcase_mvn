@@ -11,7 +11,6 @@ import java.util.*;
 
 public class ConsoleExecuteFileCommand extends AbstractConsoleCommand {
     private ConsoleInputModule inputModule;
-    private ConsoleOutputModule outputModule;
     private ParsingModule parsingModule;
     private ClientProperties properties;
     private Map<String, AbstractConsoleCommand> consoleCommandObjects;

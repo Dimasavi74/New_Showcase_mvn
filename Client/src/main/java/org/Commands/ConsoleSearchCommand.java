@@ -14,7 +14,6 @@ import java.util.*;
 
 public class ConsoleSearchCommand extends AbstractConsoleCommand {
     private ConsoleInputModule inputModule;
-    private ConsoleOutputModule outputModule;
     private ClientCommunicationModule communicationModule;
 
     private String[] words = {};
@@ -35,18 +34,15 @@ public class ConsoleSearchCommand extends AbstractConsoleCommand {
         this.unnecessaryArgs.put("advertisementId", false);
     }
 
-    public void execute() {
+    public void execute() throws Exception {
         ServerSearchCommand command = null;
-//        System.out.println("" + this.advertisementId + Arrays.toString(this.words) + Arrays.toString(this.tags) + this.minPrice + this.maxPrice);
-        try {
-            ServerCommand undefinedCommand = communicationModule.executeCommand(new ServerSearchCommand(this.advertisementId, this.words, this.tags, this.minPrice, this.maxPrice));
-            if (undefinedCommand.getError() != null) {
-                throw undefinedCommand.getError();
-            } else {
-                command = (ServerSearchCommand) undefinedCommand;
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        ServerCommand undefinedCommand = communicationModule.executeCommand(new ServerSearchCommand(this.advertisementId, this.words, this.tags, this.minPrice, this.maxPrice));
+        if (undefinedCommand.getError() != null) {
+            throw undefinedCommand.getError();
+        } else if (undefinedCommand.getErrorMessage() != null) {
+            throw new Exception(undefinedCommand.getErrorMessage());
+        } else {
+            command = (ServerSearchCommand) undefinedCommand;
         }
         if (command.getFoundAdvertisements() != null && !Arrays.equals(command.getFoundAdvertisements(), new AdvertisementData[]{})) {
             outputModule.outputLine("По вашему запросу найдено следующее:");

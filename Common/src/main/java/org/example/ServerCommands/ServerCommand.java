@@ -9,4 +9,5 @@ public interface ServerCommand extends Serializable {
     public void setBdManager(BdManager bdManager);
     public void setError(Exception e);
     public Exception getError();
+    public String getErrorMessage();
 }

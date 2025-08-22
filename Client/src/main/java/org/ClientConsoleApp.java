@@ -45,7 +45,6 @@ public class ClientConsoleApp {
         this.consoleCommandObjects.put("showAdvertisement", new ConsoleShowAdvertisementCommand(inputModule, outputModule, communicationModule));
         this.consoleCommandObjects.put("executeFile", new ConsoleExecuteFileCommand(inputModule, outputModule, parsingModule, properties, consoleCommandObjects));
         this.consoleCommandObjects.put("changeInputMode", new ConsoleChangeInputModeCommand(properties, outputModule));
-
     }
 
     public void run(){
@@ -89,7 +88,7 @@ public class ClientConsoleApp {
                 if (exitFlag) {
                     continue;
                 }
-                command.execute();
+                command.safeExecute();
                 command.clear();
             } else {
                 outputModule.outputLine("Введенной вами команды не существует. Введенная команда: " + parsedText.get("command") + ". Для большей информации введите /help");

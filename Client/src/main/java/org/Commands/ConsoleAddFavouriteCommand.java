@@ -9,11 +9,11 @@ import org.example.ServerCommands.ServerAddFavouriteCommand;
 import org.example.ServerCommands.ServerCommand;
 import org.example.ServerCommands.ServerDeleteAdvertisementCommand;
 
+import java.sql.SQLException;
 import java.util.Map;
 
 public class ConsoleAddFavouriteCommand extends AbstractConsoleCommand {
     private ConsoleInputModule inputModule;
-    private ConsoleOutputModule outputModule;
     private ClientCommunicationModule communicationModule;
     private UserData user;
 
@@ -28,21 +28,19 @@ public class ConsoleAddFavouriteCommand extends AbstractConsoleCommand {
         this.necessaryArgs.put("advertisementId", false);
     }
 
-    public void execute() {
-        ServerAddFavouriteCommand command = null;
+    public void execute() throws Exception {
         if (!this.user.isLogged) {
             outputModule.outputLine("Для добавления объявлений в понравившиеся необходимо войти (команда /login)");
             return;
         }
-        try {
-            ServerCommand undefinedCommand = communicationModule.executeCommand(new ServerAddFavouriteCommand(advertisementId, this.user));
-            if (undefinedCommand.getError() != null) {
-                throw undefinedCommand.getError();
-            } else {
-                command = (ServerAddFavouriteCommand) undefinedCommand;
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        ServerAddFavouriteCommand command = null;
+        ServerCommand undefinedCommand = communicationModule.executeCommand(new ServerAddFavouriteCommand(advertisementId, this.user));
+        if (undefinedCommand.getError() != null) {
+            throw undefinedCommand.getError();
+        } else if (undefinedCommand.getErrorMessage() != null) {
+            throw new Exception(undefinedCommand.getErrorMessage());
+        } else {
+            command = (ServerAddFavouriteCommand) undefinedCommand;
         }
         if (command.getSuccessState()) {
             outputModule.outputLine("Объявление успешно добавлено!");

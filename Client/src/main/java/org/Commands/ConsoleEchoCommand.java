@@ -4,6 +4,7 @@ import org.Modules.ClientCommunicationModule;
 import org.Modules.ConsoleInputModule;
 import org.Modules.ConsoleOutputModule;
 import org.example.ServerCommands.ServerCommand;
+import org.example.ServerCommands.ServerDeleteUserCommand;
 import org.example.ServerCommands.ServerEchoCommand;
 
 import java.io.IOException;
@@ -18,23 +19,20 @@ public class ConsoleEchoCommand extends AbstractConsoleCommand {
 
     public ConsoleEchoCommand(ConsoleInputModule inputModule, ConsoleOutputModule outputModule, ClientCommunicationModule communicationModule){
         this.inputModule = inputModule;
-        this.outputModule = outputModule;
         this.communicationModule = communicationModule;
 
         this.necessaryArgs.put("line", false);
     }
 
-    public void execute() {
+    public void execute() throws Exception {
         ServerEchoCommand command = null;
-        try {
-            ServerCommand undefinedCommand = communicationModule.executeCommand(new ServerEchoCommand(this.line));
-            if (undefinedCommand.getError() != null) {
-                throw undefinedCommand.getError();
-            } else {
-                command = (ServerEchoCommand) undefinedCommand;
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        ServerCommand undefinedCommand = communicationModule.executeCommand(new ServerEchoCommand(this.line));
+        if (undefinedCommand.getError() != null) {
+            throw undefinedCommand.getError();
+        } else if (undefinedCommand.getErrorMessage() != null) {
+            throw new Exception(undefinedCommand.getErrorMessage());
+        } else {
+            command = (ServerEchoCommand) undefinedCommand;
         }
         outputModule.outputLine(command.getLine());
     }

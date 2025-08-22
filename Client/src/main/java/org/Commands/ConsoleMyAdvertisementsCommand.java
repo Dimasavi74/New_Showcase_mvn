@@ -6,6 +6,7 @@ import org.Modules.ConsoleOutputModule;
 import org.example.DataContainers.AdvertisementData;
 import org.example.DataContainers.UserData;
 import org.example.ServerCommands.ServerCommand;
+import org.example.ServerCommands.ServerLoginCommand;
 import org.example.ServerCommands.ServerMyAdvertisementsCommand;
 import org.example.ServerCommands.ServerSearchCommand;
 
@@ -15,7 +16,6 @@ import java.util.Map;
 public class ConsoleMyAdvertisementsCommand extends AbstractConsoleCommand {
     private UserData user;
     private ClientCommunicationModule communicationModule;
-    private ConsoleOutputModule outputModule;
 
     public ConsoleMyAdvertisementsCommand(ConsoleOutputModule outputModule, ClientCommunicationModule communicationModule, UserData user){
         this.user = user;
@@ -23,21 +23,19 @@ public class ConsoleMyAdvertisementsCommand extends AbstractConsoleCommand {
         this.outputModule = outputModule;
     }
 
-    public void execute() {
+    public void execute() throws Exception {
         ServerMyAdvertisementsCommand command = null;
         if (!this.user.isLogged) {
             outputModule.outputLine("Для вывода ваших объявлений необходимо выполнить вход в систему (команда /login)");
             return;
         }
-        try {
-            ServerCommand undefinedCommand = communicationModule.executeCommand(new ServerMyAdvertisementsCommand(this.user));
-            if (undefinedCommand.getError() != null) {
-                throw undefinedCommand.getError();
-            } else {
-                command = (ServerMyAdvertisementsCommand) undefinedCommand;
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        ServerCommand undefinedCommand = communicationModule.executeCommand(new ServerMyAdvertisementsCommand(this.user));
+        if (undefinedCommand.getError() != null) {
+            throw undefinedCommand.getError();
+        } else if (undefinedCommand.getErrorMessage() != null) {
+            throw new Exception(undefinedCommand.getErrorMessage());
+        } else {
+            command = (ServerMyAdvertisementsCommand) undefinedCommand;
         }
         if (command.getFoundAdvertisements() != null && !Arrays.equals(command.getFoundAdvertisements(), new AdvertisementData[]{})) {
             outputModule.outputLine("Ваши объявления:");

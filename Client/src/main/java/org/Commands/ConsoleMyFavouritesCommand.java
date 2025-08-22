@@ -15,7 +15,6 @@ import java.util.Map;
 public class ConsoleMyFavouritesCommand extends AbstractConsoleCommand {
     private UserData user;
     private ClientCommunicationModule communicationModule;
-    private ConsoleOutputModule outputModule;
 
     public ConsoleMyFavouritesCommand(ConsoleOutputModule outputModule, ClientCommunicationModule communicationModule, UserData user){
         this.user = user;
@@ -23,21 +22,19 @@ public class ConsoleMyFavouritesCommand extends AbstractConsoleCommand {
         this.outputModule = outputModule;
     }
 
-    public void execute() {
+    public void execute() throws Exception {
         ServerMyFavouritesCommand command = null;
         if (!this.user.isLogged) {
             outputModule.outputLine("Для вывода понравившихся объявлений необходимо выполнить вход в систему (команда /login)");
             return;
         }
-        try {
-            ServerCommand undefinedCommand = communicationModule.executeCommand(new ServerMyFavouritesCommand(this.user));
-            if (undefinedCommand.getError() != null) {
-                throw undefinedCommand.getError();
-            } else {
-                command = (ServerMyFavouritesCommand) undefinedCommand;
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        ServerCommand undefinedCommand = communicationModule.executeCommand(new ServerMyFavouritesCommand(this.user));
+        if (undefinedCommand.getError() != null) {
+            throw undefinedCommand.getError();
+        } else if (undefinedCommand.getErrorMessage() != null) {
+            throw new Exception(undefinedCommand.getErrorMessage());
+        } else {
+            command = (ServerMyFavouritesCommand) undefinedCommand;
         }
         if (command.getFoundAdvertisements() != null && !Arrays.equals(command.getFoundAdvertisements(), new AdvertisementData[]{})) {
             outputModule.outputLine("Понравившиеся объявления:");

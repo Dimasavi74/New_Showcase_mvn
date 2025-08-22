@@ -7,7 +7,6 @@ import java.util.Map;
 
 public class ConsoleChangeInputModeCommand extends AbstractConsoleCommand {
     private ClientProperties properties;
-    private ConsoleOutputModule outputModule;
 
     public ConsoleChangeInputModeCommand(ClientProperties properties, ConsoleOutputModule outputModule){
         this.properties = properties;

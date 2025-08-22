@@ -7,6 +7,7 @@ import java.io.*;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
+import java.util.Arrays;
 
 public class ClientCommunicationModule {
     private SocketChannel channel;
@@ -20,19 +21,17 @@ public class ClientCommunicationModule {
         try {
             channel = SocketChannel.open();
         } catch (IOException e) {
+            System.out.println("Ошибка при открытии канала коммуникации!");
             throw new RuntimeException(e);
         }
     }
 
-    public ServerCommand executeCommand(ServerCommand command) throws IOException {
-        if (!channel.isConnected()) {
-            channel = SocketChannel.open();
-            channel.connect(new InetSocketAddress(host, port));
-        }
-
-        // Отправка на сервер
+    public ServerCommand executeCommand(ServerCommand command) {
+        ServerCommand newCommand;
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
              ObjectOutputStream oos = new ObjectOutputStream(baos)) {
+            channel = SocketChannel.open();
+            channel.connect(new InetSocketAddress(host, port));
             channel.configureBlocking(true);
 
             oos.writeObject(command);
@@ -47,26 +46,17 @@ public class ClientCommunicationModule {
             while (buffer.hasRemaining()) {
                 channel.write(buffer);
             }
-
         } catch (IOException e) {
-            throw new RuntimeException(e); // !!! Передать команде на вывод
+            command = new ServerEmptyCommand();
+            command.setError(e);
+//            throw new RuntimeException(e); // !!! Передать команде на вывод
         }
 
-
-
-        // Получение данных с сервера
         ByteBuffer lengthBuffer;
-        ByteBuffer dataBuffer;
+        ByteBuffer dataBuffer = ByteBuffer.allocate(0);
         try {
-            channel.configureBlocking(true);
-
-            // Чтение размера данных (4 байта)
             lengthBuffer = ByteBuffer.allocate(READING_DATA_SIZE_BUFFER_CAPACITY);
-            try {
-                channel.read(lengthBuffer);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+            channel.read(lengthBuffer);
             lengthBuffer.flip();
             int dataLength = lengthBuffer.getInt();
             dataBuffer = ByteBuffer.allocate(dataLength);
@@ -74,27 +64,23 @@ public class ClientCommunicationModule {
                 channel.read(dataBuffer);
             }
             dataBuffer.flip();
-
         } catch (IOException e) {
-            throw new RuntimeException(e); // !!! Передать команде на вывод
+            command = new ServerEmptyCommand();
+            command.setError(e);
+//            throw new RuntimeException(e); // !!! Передать команде на вывод
         }
 
         // Десериализация
-        ServerCommand newCommand;
         try (ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(dataBuffer.array()))) {
-            newCommand = (ServerCommand) ois.readObject();
+            newCommand = (ServerCommand) ois.readObject();;
         } catch (ClassNotFoundException | IOException e) {
             newCommand = new ServerEmptyCommand();
             newCommand.setError(e);
-            throw new RuntimeException("Ошибка при десериализвции объекта на клиенте", e); // !!! Передать команде на вывод
+//            throw new RuntimeException("Ошибка при десериализации объекта на клиенте", e); // !!! Передать команде на вывод
         }
-
         try {
-            channel.configureBlocking(false);
-        } catch (IOException e) {
-            throw new RuntimeException(e); // !!! Игнорировать
-        }
-    channel.close();
-    return newCommand;
+            channel.close();
+        } catch (IOException ignored) {}
+        return newCommand;
     }
 }

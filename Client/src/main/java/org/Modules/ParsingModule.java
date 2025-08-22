@@ -9,6 +9,10 @@ public class ParsingModule {
 
         HashMap<String, String> parsedMap = new HashMap<>();
 
+        if (line.isEmpty()) {
+            return new HashMap<>();
+        }
+
         if (line.contains("/")) {
             line = line.substring(line.indexOf('/'));
         }
@@ -28,7 +32,7 @@ public class ParsingModule {
         }
         parsedMap.put("command", String.valueOf(commandName));
 
-        // Полуение аргументов
+        // Получение аргументов
         for (int i = 0; i < line.length(); i++) {
             char c = line.charAt(i);
             if (c == '{') {
