@@ -29,7 +29,7 @@ public class ClientConsoleApp {
 
         this.consoleCommandObjects.put("exit", new ConsoleExitCommand(properties, outputModule));
         this.consoleCommandObjects.put("manual", new ConsoleManualCommand(inputModule, outputModule, consoleCommandObjects));
-        this.consoleCommandObjects.put("help", new ConsoleHelpCommand(outputModule));
+        this.consoleCommandObjects.put("help", new ConsoleHelpCommand(outputModule, consoleCommandObjects));
         this.consoleCommandObjects.put("echo", new ConsoleEchoCommand(inputModule, outputModule, communicationModule));
         this.consoleCommandObjects.put("register", new ConsoleRegisterCommand(inputModule, outputModule, communicationModule));
         this.consoleCommandObjects.put("search", new ConsoleSearchCommand(inputModule, outputModule, communicationModule));

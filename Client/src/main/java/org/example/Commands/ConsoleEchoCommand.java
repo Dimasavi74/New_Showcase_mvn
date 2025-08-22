@@ -10,7 +10,6 @@ import java.util.Map;
 
 public class ConsoleEchoCommand extends AbstractConsoleCommand {
     private ConsoleInputModule inputModule;
-    private ConsoleOutputModule outputModule;
     private ClientCommunicationModule communicationModule;
 
     private String line;
@@ -18,6 +17,7 @@ public class ConsoleEchoCommand extends AbstractConsoleCommand {
     public ConsoleEchoCommand(ConsoleInputModule inputModule, ConsoleOutputModule outputModule, ClientCommunicationModule communicationModule){
         this.inputModule = inputModule;
         this.communicationModule = communicationModule;
+        this.outputModule = outputModule;
 
         this.necessaryArgs.put("line", false);
     }

@@ -10,7 +10,6 @@ import java.util.Map;
 
 public class ConsoleDeleteUserCommand extends AbstractConsoleCommand {
     private ConsoleInputModule inputModule;
-    private ConsoleOutputModule outputModule;
     private ClientCommunicationModule communicationModule;
 
     private String nickname;
