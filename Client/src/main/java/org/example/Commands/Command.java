@@ -1,4 +1,4 @@
-package org.Commands;
+package org.example.Commands;
 
 import java.util.Map;
 

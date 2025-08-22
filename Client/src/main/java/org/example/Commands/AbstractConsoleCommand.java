@@ -1,7 +1,6 @@
-package org.Commands;
+package org.example.Commands;
 
-import org.Modules.ConsoleOutputModule;
-import org.Modules.OutputModule;
+import org.example.Modules.ConsoleOutputModule;
 
 import java.io.IOException;
 import java.util.HashMap;

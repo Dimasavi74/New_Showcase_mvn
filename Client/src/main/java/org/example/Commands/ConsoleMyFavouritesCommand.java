@@ -1,49 +1,46 @@
-package org.Commands;
+package org.example.Commands;
 
-import org.ClientProperties;
-import org.Modules.ClientCommunicationModule;
-import org.Modules.ConsoleOutputModule;
+import org.example.Modules.ClientCommunicationModule;
+import org.example.Modules.ConsoleOutputModule;
 import org.example.DataContainers.AdvertisementData;
 import org.example.DataContainers.UserData;
 import org.example.ServerCommands.ServerCommand;
-import org.example.ServerCommands.ServerLoginCommand;
-import org.example.ServerCommands.ServerMyAdvertisementsCommand;
-import org.example.ServerCommands.ServerSearchCommand;
+import org.example.ServerCommands.ServerMyFavouritesCommand;
 
 import java.util.Arrays;
 import java.util.Map;
 
-public class ConsoleMyAdvertisementsCommand extends AbstractConsoleCommand {
+public class ConsoleMyFavouritesCommand extends AbstractConsoleCommand {
     private UserData user;
     private ClientCommunicationModule communicationModule;
 
-    public ConsoleMyAdvertisementsCommand(ConsoleOutputModule outputModule, ClientCommunicationModule communicationModule, UserData user){
+    public ConsoleMyFavouritesCommand(ConsoleOutputModule outputModule, ClientCommunicationModule communicationModule, UserData user){
         this.user = user;
         this.communicationModule = communicationModule;
         this.outputModule = outputModule;
     }
 
     public void execute() throws Exception {
-        ServerMyAdvertisementsCommand command = null;
+        ServerMyFavouritesCommand command = null;
         if (!this.user.isLogged) {
-            outputModule.outputLine("Для вывода ваших объявлений необходимо выполнить вход в систему (команда /login)");
+            outputModule.outputLine("Для вывода понравившихся объявлений необходимо выполнить вход в систему (команда /login)");
             return;
         }
-        ServerCommand undefinedCommand = communicationModule.executeCommand(new ServerMyAdvertisementsCommand(this.user));
+        ServerCommand undefinedCommand = communicationModule.executeCommand(new ServerMyFavouritesCommand(this.user));
         if (undefinedCommand.getError() != null) {
             throw undefinedCommand.getError();
         } else if (undefinedCommand.getErrorMessage() != null) {
             throw new Exception(undefinedCommand.getErrorMessage());
         } else {
-            command = (ServerMyAdvertisementsCommand) undefinedCommand;
+            command = (ServerMyFavouritesCommand) undefinedCommand;
         }
         if (command.getFoundAdvertisements() != null && !Arrays.equals(command.getFoundAdvertisements(), new AdvertisementData[]{})) {
-            outputModule.outputLine("Ваши объявления:");
+            outputModule.outputLine("Понравившиеся объявления:");
             for (AdvertisementData advertisement: command.getFoundAdvertisements()) {
                 outputModule.outputLine("(" + advertisement.id + ") " + advertisement.title + " " + advertisement.price);
             }
         } else {
-            outputModule.outputLine("Вы еще не создали ни одного объявления! (команда /createAdvertisement)");
+            outputModule.outputLine("Вы еще не добавили ни одного объявления! (команда /addFavourite)");
         }
     }
 
@@ -64,6 +61,6 @@ public class ConsoleMyAdvertisementsCommand extends AbstractConsoleCommand {
     }
 
     public String getManual(){
-        return "Выводит список ваших объявлений";
+        return "Выводит список понравившихся объявлений";
     }
 }

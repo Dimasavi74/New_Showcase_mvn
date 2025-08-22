@@ -1,18 +1,14 @@
-package org.Commands;
+package org.example.Commands;
 
-import org.Modules.ClientCommunicationModule;
-import org.Modules.ConsoleInputModule;
-import org.Modules.ConsoleOutputModule;
+import org.example.Modules.ClientCommunicationModule;
+import org.example.Modules.ConsoleInputModule;
+import org.example.Modules.ConsoleOutputModule;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.example.DataContainers.AdvertisementData;
 import org.example.DataContainers.UserData;
-import org.example.ServerCommands.ServerAddFavouriteCommand;
 import org.example.ServerCommands.ServerCommand;
 import org.example.ServerCommands.ServerCreateAdvertisementCommand;
-import org.example.ServerCommands.ServerSearchCommand;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 public class ConsoleCreateAdvertisementCommand extends AbstractConsoleCommand {

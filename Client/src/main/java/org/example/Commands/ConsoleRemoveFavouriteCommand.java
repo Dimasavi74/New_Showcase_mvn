@@ -1,25 +1,23 @@
-package org.Commands;
+package org.example.Commands;
 
-import org.Modules.ClientCommunicationModule;
-import org.Modules.ConsoleInputModule;
-import org.Modules.ConsoleOutputModule;
+import org.example.Modules.ClientCommunicationModule;
+import org.example.Modules.ConsoleInputModule;
+import org.example.Modules.ConsoleOutputModule;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.example.DataContainers.UserData;
-import org.example.ServerCommands.ServerAddFavouriteCommand;
 import org.example.ServerCommands.ServerCommand;
 import org.example.ServerCommands.ServerDeleteAdvertisementCommand;
 
-import java.sql.SQLException;
 import java.util.Map;
 
-public class ConsoleAddFavouriteCommand extends AbstractConsoleCommand {
+public class ConsoleRemoveFavouriteCommand extends AbstractConsoleCommand {
     private ConsoleInputModule inputModule;
     private ClientCommunicationModule communicationModule;
     private UserData user;
 
     private Integer advertisementId = 0;
 
-    public ConsoleAddFavouriteCommand(ConsoleInputModule inputModule, ConsoleOutputModule outputModule, ClientCommunicationModule communicationModule, UserData user){
+    public ConsoleRemoveFavouriteCommand(ConsoleInputModule inputModule, ConsoleOutputModule outputModule, ClientCommunicationModule communicationModule, UserData user){
         this.inputModule = inputModule;
         this.outputModule = outputModule;
         this.communicationModule = communicationModule;
@@ -29,23 +27,23 @@ public class ConsoleAddFavouriteCommand extends AbstractConsoleCommand {
     }
 
     public void execute() throws Exception {
+        ServerDeleteAdvertisementCommand command = null;
         if (!this.user.isLogged) {
-            outputModule.outputLine("Для добавления объявлений в понравившиеся необходимо войти (команда /login)");
+            outputModule.outputLine("Для удаления объявлений из понравившихся необходимо выполнить вход в систему (команда /login)");
             return;
         }
-        ServerAddFavouriteCommand command = null;
-        ServerCommand undefinedCommand = communicationModule.executeCommand(new ServerAddFavouriteCommand(advertisementId, this.user));
+        ServerCommand undefinedCommand = communicationModule.executeCommand(new ServerDeleteAdvertisementCommand(advertisementId, this.user));
         if (undefinedCommand.getError() != null) {
             throw undefinedCommand.getError();
         } else if (undefinedCommand.getErrorMessage() != null) {
             throw new Exception(undefinedCommand.getErrorMessage());
         } else {
-            command = (ServerAddFavouriteCommand) undefinedCommand;
+            command = (ServerDeleteAdvertisementCommand) undefinedCommand;
         }
         if (command.getSuccessState()) {
-            outputModule.outputLine("Объявление успешно добавлено!");
+            outputModule.outputLine("Объявление успешно удалено!");
         } else {
-            outputModule.outputLine("Такого объявления не существует!");
+            outputModule.outputLine("У вас нет такого объявления!");
         }
     }
 
@@ -71,7 +69,7 @@ public class ConsoleAddFavouriteCommand extends AbstractConsoleCommand {
         if (!isFilledFlag) {
             outputModule.outputLine("Заполните обязательные аргументы:");
             while (!this.necessaryArgs.get("advertisementId")) {
-                String line = inputModule.inputLineWithDescription("Введите id добавляемого объявления: ");
+                String line = inputModule.inputLineWithDescription("Введите id убираемого объявления: ");
                 if (line.equals("0")) {
                     necessaryArgs.put("advertisementId", true);
                     this.advertisementId = 0;
@@ -98,6 +96,6 @@ public class ConsoleAddFavouriteCommand extends AbstractConsoleCommand {
     }
 
     public String getManual(){
-        return "Добавляет объявление в понравившиеся по id. \nСписок аргументов:\nadvertisementId - id объявления (натуральное число)";
+        return "Удаляет ваше объявление из списка понравившихся по id. \nСписок аргументов:\nadvertisementId - id объявления (натуральное число)";
     }
 }

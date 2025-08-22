@@ -1,4 +1,4 @@
-package org.Modules;
+package org.example.Modules;
 
 public class ConsoleOutputModule {
     public void outputLine(String line){

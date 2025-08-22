@@ -1,9 +1,9 @@
-package org;
+package org.example;
 
-import org.Modules.ClientCommunicationModule;
-import org.Modules.ConsoleInputModule;
-import org.Modules.ConsoleOutputModule;
-import org.Modules.ParsingModule;
+import org.example.Modules.ClientCommunicationModule;
+import org.example.Modules.ConsoleInputModule;
+import org.example.Modules.ConsoleOutputModule;
+import org.example.Modules.ParsingModule;
 
 import java.util.Scanner;
 

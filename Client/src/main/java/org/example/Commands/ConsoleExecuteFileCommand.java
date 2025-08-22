@@ -1,10 +1,9 @@
-package org.Commands;
+package org.example.Commands;
 
-import org.ClientProperties;
-import org.Modules.ConsoleInputModule;
-import org.Modules.ConsoleOutputModule;
-import org.Modules.ParsingModule;
-import org.example.ServerCommands.AbstractServerCommand;
+import org.example.ClientProperties;
+import org.example.Modules.ConsoleInputModule;
+import org.example.Modules.ConsoleOutputModule;
+import org.example.Modules.ParsingModule;
 
 import java.io.IOException;
 import java.util.*;

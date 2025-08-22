@@ -1,4 +1,4 @@
-package org.Modules;
+package org.example.Modules;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -1,7 +1,7 @@
-package org.Commands;
+package org.example.Commands;
 
-import org.ClientProperties;
-import org.Modules.ConsoleOutputModule;
+import org.example.ClientProperties;
+import org.example.Modules.ConsoleOutputModule;
 
 import java.util.Map;
 

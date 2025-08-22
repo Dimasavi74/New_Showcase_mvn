@@ -1,8 +1,8 @@
-package org.Commands;
+package org.example.Commands;
 
-import org.Modules.ClientCommunicationModule;
-import org.Modules.ConsoleInputModule;
-import org.Modules.ConsoleOutputModule;
+import org.example.Modules.ClientCommunicationModule;
+import org.example.Modules.ConsoleInputModule;
+import org.example.Modules.ConsoleOutputModule;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.example.DataContainers.UserData;
 import org.example.ServerCommands.ServerCommand;
@@ -10,14 +10,14 @@ import org.example.ServerCommands.ServerDeleteAdvertisementCommand;
 
 import java.util.Map;
 
-public class ConsoleRemoveFavouriteCommand extends AbstractConsoleCommand {
+public class ConsoleDeleteAdvertisementCommand extends AbstractConsoleCommand {
     private ConsoleInputModule inputModule;
     private ClientCommunicationModule communicationModule;
     private UserData user;
 
     private Integer advertisementId = 0;
 
-    public ConsoleRemoveFavouriteCommand(ConsoleInputModule inputModule, ConsoleOutputModule outputModule, ClientCommunicationModule communicationModule, UserData user){
+    public ConsoleDeleteAdvertisementCommand(ConsoleInputModule inputModule, ConsoleOutputModule outputModule, ClientCommunicationModule communicationModule, UserData user){
         this.inputModule = inputModule;
         this.outputModule = outputModule;
         this.communicationModule = communicationModule;
@@ -29,7 +29,7 @@ public class ConsoleRemoveFavouriteCommand extends AbstractConsoleCommand {
     public void execute() throws Exception {
         ServerDeleteAdvertisementCommand command = null;
         if (!this.user.isLogged) {
-            outputModule.outputLine("Для удаления объявлений из понравившихся необходимо выполнить вход в систему (команда /login)");
+            outputModule.outputLine("Для удаления объявлений необходимо выполнить вход в систему (команда /login)");
             return;
         }
         ServerCommand undefinedCommand = communicationModule.executeCommand(new ServerDeleteAdvertisementCommand(advertisementId, this.user));
@@ -69,7 +69,7 @@ public class ConsoleRemoveFavouriteCommand extends AbstractConsoleCommand {
         if (!isFilledFlag) {
             outputModule.outputLine("Заполните обязательные аргументы:");
             while (!this.necessaryArgs.get("advertisementId")) {
-                String line = inputModule.inputLineWithDescription("Введите id убираемого объявления: ");
+                String line = inputModule.inputLineWithDescription("Введите id удаляемого объявления: ");
                 if (line.equals("0")) {
                     necessaryArgs.put("advertisementId", true);
                     this.advertisementId = 0;
@@ -96,6 +96,6 @@ public class ConsoleRemoveFavouriteCommand extends AbstractConsoleCommand {
     }
 
     public String getManual(){
-        return "Удаляет ваше объявление из списка понравившихся по id. \nСписок аргументов:\nadvertisementId - id объявления (натуральное число)";
+        return "Удаляет ваше объявление по id. \nСписок аргументов:\nadvertisementId - id объявления (натуральное число)";
     }
 }

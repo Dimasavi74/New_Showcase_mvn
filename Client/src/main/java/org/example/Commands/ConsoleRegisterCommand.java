@@ -1,29 +1,25 @@
-package org.Commands;
+package org.example.Commands;
 
-import org.Modules.ClientCommunicationModule;
-import org.Modules.ConsoleInputModule;
-import org.Modules.ConsoleOutputModule;
-import org.example.DataContainers.UserData;
-import org.example.ServerCommands.*;
+import org.example.Modules.ClientCommunicationModule;
+import org.example.Modules.ConsoleInputModule;
+import org.example.Modules.ConsoleOutputModule;
+import org.example.ServerCommands.ServerCommand;
+import org.example.ServerCommands.ServerRegisterCommand;
 
-import java.io.IOException;
-import java.sql.SQLException;
 import java.util.Map;
 
-public class ConsoleLoginCommand extends AbstractConsoleCommand {
+public class ConsoleRegisterCommand extends AbstractConsoleCommand {
     private ConsoleInputModule inputModule;
     private ClientCommunicationModule communicationModule;
-    private UserData user;
 
     private String nickname;
     private String mailAddress;
     private String password;
 
-    public ConsoleLoginCommand(ConsoleInputModule inputModule, ConsoleOutputModule outputModule, ClientCommunicationModule communicationModule, UserData user){
+    public ConsoleRegisterCommand(ConsoleInputModule inputModule, ConsoleOutputModule outputModule, ClientCommunicationModule communicationModule){
         this.inputModule = inputModule;
         this.outputModule = outputModule;
         this.communicationModule = communicationModule;
-        this.user = user;
 
         this.necessaryArgs.put("nickname", false);
         this.necessaryArgs.put("mailAddress", false);
@@ -31,28 +27,30 @@ public class ConsoleLoginCommand extends AbstractConsoleCommand {
     }
 
     public void execute() throws Exception {
-        ServerLoginCommand command = null;
-        ServerCommand undefinedCommand = communicationModule.executeCommand(new ServerLoginCommand(this.nickname, this.mailAddress, this.password));
+        ServerRegisterCommand command = null;
+        ServerCommand undefinedCommand = communicationModule.executeCommand(new ServerRegisterCommand(this.nickname, this.mailAddress, this.password));
         if (undefinedCommand.getError() != null) {
             throw undefinedCommand.getError();
         } else if (undefinedCommand.getErrorMessage() != null) {
             throw new Exception(undefinedCommand.getErrorMessage());
         } else {
-            command = (ServerLoginCommand) undefinedCommand;
+            command = (ServerRegisterCommand) undefinedCommand;
         }
         if (command.getSuccessState()) {
-            user.setAllData(this.nickname, this.mailAddress, this.password);
-            this.user.isLogged = true;
-            outputModule.outputLine("Вход успешно выполнен!");
+            outputModule.outputLine("Пользователь " + this.nickname + " успешно зарегистрирован!");
         } else {
-            outputModule.outputLine("Неверный пароль!");
+            outputModule.outputLine("При регистрации пользователя произошла ошибка! Повторите попытку позднее!");
         }
     }
 
     public void putData(Map<String, String> data) {
         if (data.containsKey("nickname")) {
-            this.necessaryArgs.put("nickname", true);
-            this.nickname = data.get("nickname");
+            if (!data.get("nickname").isEmpty()) {
+                this.necessaryArgs.put("nickname", true);
+                this.nickname = data.get("nickname");
+            } else {
+                outputModule.outputLine("Имя пользователя не может быть пустым!");
+            }
         }
         if (data.containsKey("mailAddress")) {
             if (data.get("mailAddress").contains("@")) {
@@ -63,8 +61,12 @@ public class ConsoleLoginCommand extends AbstractConsoleCommand {
             }
         }
         if (data.containsKey("password")) {
-            this.necessaryArgs.put("password", true);
-            this.password = data.get("password");
+            if (!data.get("password").isEmpty()) {
+                this.necessaryArgs.put("password", true);
+                this.password = data.get("password");
+            } else {
+                outputModule.outputLine("Пароль не может быть пустым!");
+            }
         }
     }
 
@@ -117,7 +119,7 @@ public class ConsoleLoginCommand extends AbstractConsoleCommand {
     }
 
     public String getManual(){
-        return "Выполняет вход \n" +
+        return "Регистрирует пользователя \n" +
                 "Список аргументов:\n" +
                 "nickname - имя пользователя\n" +
                 "mailAddress - электронная почта\n" +

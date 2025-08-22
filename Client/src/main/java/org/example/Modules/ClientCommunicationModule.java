@@ -1,4 +1,4 @@
-package org.Modules;
+package org.example.Modules;
 
 import org.example.ServerCommands.ServerCommand;
 import org.example.ServerCommands.ServerEmptyCommand;
@@ -7,7 +7,6 @@ import java.io.*;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
-import java.util.Arrays;
 
 public class ClientCommunicationModule {
     private SocketChannel channel;
