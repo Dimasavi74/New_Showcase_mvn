@@ -1,12 +1,14 @@
 package org.example.Commands;
 
+import org.example.DataContainers.AdvertisementWithIdData;
+import org.example.DataContainers.ServerCommandData.AbstractServerCommandData;
+import org.example.DataContainers.ServerCommandData.ServerCommandData;
+import org.example.DataContainers.ServerCommandData.ServerSearchCommandData;
 import org.example.Modules.ClientCommunicationModule;
 import org.example.Modules.ConsoleInputModule;
 import org.example.Modules.ConsoleOutputModule;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.example.DataContainers.AdvertisementData;
-import org.example.ServerCommands.ServerCommand;
-import org.example.ServerCommands.ServerSearchCommand;
 
 import java.util.Arrays;
 import java.util.Map;
@@ -26,23 +28,23 @@ public class ConsoleShowAdvertisementCommand extends AbstractConsoleCommand {
     }
 
     public void execute() throws Exception {
-        ServerSearchCommand command = null;
-        ServerCommand undefinedCommand = communicationModule.executeCommand(new ServerSearchCommand(this.advertisementId, new String[0], new String[0], 0, null));
-        if (undefinedCommand.getError() != null) {
-            throw undefinedCommand.getError();
+        ServerSearchCommandData command = null;
+        ServerCommandData undefinedCommand = communicationModule.executeCommand(new ServerSearchCommandData(this.advertisementId, new String[0], new String[0], 0, null));
+        if (undefinedCommand.getErrorMessage() != null) {
+            throw new Exception(undefinedCommand.getErrorMessage());
         } else if (undefinedCommand.getErrorMessage() != null) {
             throw new Exception(undefinedCommand.getErrorMessage());
         } else {
-            command = (ServerSearchCommand) undefinedCommand;
+            command = (ServerSearchCommandData) undefinedCommand;
         }
         if (command.getFoundAdvertisements() != null && !Arrays.equals(command.getFoundAdvertisements(), new AdvertisementData[]{})) {
             for (AdvertisementData advertisement: command.getFoundAdvertisements()) {
-                outputModule.outputLine("(" + advertisement.id + ")");
-                outputModule.outputLine(advertisement.title);
+                outputModule.outputLine("(" + ((AdvertisementWithIdData) advertisement).getId() + ")");
+                outputModule.outputLine(advertisement.getTitle());
                 outputModule.outputLine("Описание:");
-                outputModule.outputLine(advertisement.description);
-                outputModule.outputLine("Цена: " + advertisement.price);
-                outputModule.outputLine("Контакты: " + advertisement.contacts);
+                outputModule.outputLine(advertisement.getDescription());
+                outputModule.outputLine("Цена: " + advertisement.getPrice());
+                outputModule.outputLine("Контакты: " + advertisement.getContacts());
             }
         } else {
             outputModule.outputLine("Объявление с таким id не найдено!");

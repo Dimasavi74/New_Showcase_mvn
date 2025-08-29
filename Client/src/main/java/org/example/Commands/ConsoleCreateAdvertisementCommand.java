@@ -1,13 +1,14 @@
 package org.example.Commands;
 
+import org.example.DataContainers.ServerCommandData.AbstractServerCommandData;
+import org.example.DataContainers.ServerCommandData.ServerCommandData;
+import org.example.DataContainers.ServerCommandData.ServerCreateAdvertisementCommandData;
 import org.example.Modules.ClientCommunicationModule;
 import org.example.Modules.ConsoleInputModule;
 import org.example.Modules.ConsoleOutputModule;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.example.DataContainers.AdvertisementData;
 import org.example.DataContainers.UserData;
-import org.example.ServerCommands.ServerCommand;
-import org.example.ServerCommands.ServerCreateAdvertisementCommand;
 
 import java.util.Map;
 
@@ -37,19 +38,19 @@ public class ConsoleCreateAdvertisementCommand extends AbstractConsoleCommand {
     }
 
     public void execute() throws Exception {
-        ServerCreateAdvertisementCommand command = null;
+        ServerCreateAdvertisementCommandData command = null;
         AdvertisementData advertisement = new AdvertisementData(title, description, price, contacts, tags);
-        if (!this.user.isLogged) {
+        if (!this.user.getLoginState()) {
             outputModule.outputLine("Для создания объявления необходимо выполнить вход в систему (команда /login)");
             return;
         }
-        ServerCommand undefinedCommand = communicationModule.executeCommand(new ServerCreateAdvertisementCommand(advertisement, this.user));
-        if (undefinedCommand.getError() != null) {
-            throw undefinedCommand.getError();
+        ServerCommandData undefinedCommand = communicationModule.executeCommand(new ServerCreateAdvertisementCommandData(advertisement, this.user));
+        if (undefinedCommand.getErrorMessage() != null) {
+            throw new Exception(undefinedCommand.getErrorMessage());
         } else if (undefinedCommand.getErrorMessage() != null) {
             throw new Exception(undefinedCommand.getErrorMessage());
         } else {
-            command = (ServerCreateAdvertisementCommand) undefinedCommand;
+            command = (ServerCreateAdvertisementCommandData) undefinedCommand;
         }
         if (command.getSuccessState()) {
             outputModule.outputLine("Объявление успешно создано!");

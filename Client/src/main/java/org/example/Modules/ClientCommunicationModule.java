@@ -1,7 +1,8 @@
 package org.example.Modules;
 
-import org.example.ServerCommands.ServerCommand;
-import org.example.ServerCommands.ServerEmptyCommand;
+import org.example.DataContainers.ServerCommandData.AbstractServerCommandData;
+import org.example.DataContainers.ServerCommandData.ServerCommandData;
+import org.example.DataContainers.ServerCommandData.ServerEmptyCommandData;
 
 import java.io.*;
 import java.net.InetSocketAddress;
@@ -25,8 +26,8 @@ public class ClientCommunicationModule {
         }
     }
 
-    public ServerCommand executeCommand(ServerCommand command) {
-        ServerCommand newCommand;
+    public ServerCommandData executeCommand(ServerCommandData command) {
+        ServerCommandData newCommandData;
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
              ObjectOutputStream oos = new ObjectOutputStream(baos)) {
             channel = SocketChannel.open();
@@ -46,8 +47,9 @@ public class ClientCommunicationModule {
                 channel.write(buffer);
             }
         } catch (IOException e) {
-            command = new ServerEmptyCommand();
-            command.setError(e);
+            newCommandData = new ServerEmptyCommandData();
+            newCommandData.setErrorMessage(e.getMessage());
+            return newCommandData;
 //            throw new RuntimeException(e); // !!! Передать команде на вывод
         }
 
@@ -64,22 +66,23 @@ public class ClientCommunicationModule {
             }
             dataBuffer.flip();
         } catch (IOException e) {
-            command = new ServerEmptyCommand();
-            command.setError(e);
+            newCommandData = new ServerEmptyCommandData();
+            newCommandData.setErrorMessage(e.getMessage());
+            return newCommandData;
 //            throw new RuntimeException(e); // !!! Передать команде на вывод
         }
 
         // Десериализация
         try (ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(dataBuffer.array()))) {
-            newCommand = (ServerCommand) ois.readObject();;
+            newCommandData = (ServerCommandData) ois.readObject();;
         } catch (ClassNotFoundException | IOException e) {
-            newCommand = new ServerEmptyCommand();
-            newCommand.setError(e);
+            newCommandData = new ServerEmptyCommandData();
+            newCommandData.setErrorMessage(e.getMessage());
 //            throw new RuntimeException("Ошибка при десериализации объекта на клиенте", e); // !!! Передать команде на вывод
         }
         try {
             channel.close();
         } catch (IOException ignored) {}
-        return newCommand;
+        return newCommandData;
     }
 }

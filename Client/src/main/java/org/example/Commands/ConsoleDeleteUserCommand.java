@@ -1,10 +1,11 @@
 package org.example.Commands;
 
+import org.example.DataContainers.ServerCommandData.AbstractServerCommandData;
+import org.example.DataContainers.ServerCommandData.ServerCommandData;
+import org.example.DataContainers.ServerCommandData.ServerDeleteUserCommandData;
 import org.example.Modules.ClientCommunicationModule;
 import org.example.Modules.ConsoleInputModule;
 import org.example.Modules.ConsoleOutputModule;
-import org.example.ServerCommands.ServerCommand;
-import org.example.ServerCommands.ServerDeleteUserCommand;
 
 import java.util.Map;
 
@@ -26,14 +27,14 @@ public class ConsoleDeleteUserCommand extends AbstractConsoleCommand {
     }
 
     public void execute() throws Exception {
-        ServerDeleteUserCommand command = null;
-        ServerCommand undefinedCommand = communicationModule.executeCommand(new ServerDeleteUserCommand(this.nickname, this.mailAddress, this.password));
-        if (undefinedCommand.getError() != null) {
-            throw undefinedCommand.getError();
+        ServerDeleteUserCommandData command = null;
+        ServerCommandData undefinedCommand = communicationModule.executeCommand(new ServerDeleteUserCommandData(this.nickname, this.mailAddress, this.password));
+        if (undefinedCommand.getErrorMessage() != null) {
+            throw new Exception(undefinedCommand.getErrorMessage());
         } else if (undefinedCommand.getErrorMessage() != null) {
             throw new Exception(undefinedCommand.getErrorMessage());
         } else {
-            command = (ServerDeleteUserCommand) undefinedCommand;
+            command = (ServerDeleteUserCommandData) undefinedCommand;
         }
         if (command.getSuccessState()) {
             outputModule.outputLine("Пользователь " + this.nickname + " успешно удален!");

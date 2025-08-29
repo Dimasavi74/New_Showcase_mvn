@@ -2,6 +2,7 @@ package org.example;
 
 import at.favre.lib.crypto.bcrypt.BCrypt;
 import org.example.DataContainers.AdvertisementData;
+import org.example.DataContainers.AdvertisementWithIdData;
 import org.example.DataContainers.UserData;
 
 import java.sql.*;
@@ -77,7 +78,7 @@ public class PostgreSQLBdManager implements BdManager {
 
     }
 
-    public AdvertisementData[] search(Integer advertisementId, String[] words, String[] tags, Integer minPrice, Integer maxPrice) throws SQLException {
+    public AdvertisementWithIdData[] search(Integer advertisementId, String[] words, String[] tags, Integer minPrice, Integer maxPrice) throws SQLException {
         PreparedStatement ps;
         String query;
         ResultSet result;
@@ -90,72 +91,93 @@ public class PostgreSQLBdManager implements BdManager {
             ps.setInt(1, advertisementId);
             result = ps.executeQuery();
 
-            List<AdvertisementData> advertisements = new ArrayList<AdvertisementData>();
+            List<AdvertisementWithIdData> advertisements = new ArrayList<AdvertisementWithIdData>();
             if (result.next()) {
                 Integer id = advertisementId;
                 String title = result.getString(1);
                 String description = result.getString(2);
                 Integer price = result.getInt(3);
                 String contacts = result.getString(4);
-                advertisements.add(new AdvertisementData(id, title, description, price, contacts, new String[]{}));
+                advertisements.add(new AdvertisementWithIdData(id, title, description, price, contacts, new String[]{}));
             }
-            return advertisements.toArray(new AdvertisementData[]{});
+            return advertisements.toArray(new AdvertisementWithIdData[]{});
         }
 
-        if (words != null && !Arrays.equals(words, new String[0])) {
-            if (tags != null && !Arrays.equals(tags, new String[0])) {
-                query = "SELECT id, title, price, description, contacts, score(id, ARRAY[?]::text[]) AS score FROM (SELECT filterTags(ARRAY[?]::text[]) AS id)" +
-                        " INNER JOIN Advertisement ON id = Advertisement.AdvertisementId WHERE price >= ? AND price <= ? ORDER BY score LIMIT ?;";
-                ps = connection.prepareStatement(query);
-                ps.setArray(1, connection.createArrayOf("TEXT", words));
-                ps.setArray(2, connection.createArrayOf("TEXT", tags));
-                ps.setInt(3, minPrice);
+        if (words != null && words.length != 0) {
+            if (tags != null && tags.length != 0) {
+
                 if (maxPrice != null) {
+                    query = "SELECT id, title, price, description, contacts, score(id, ARRAY[?]::text[]) AS score FROM (SELECT filterTags(ARRAY[?]::text[]) AS id)" +
+                            " INNER JOIN Advertisement ON id = Advertisement.AdvertisementId WHERE price >= ? AND price <= ? ORDER BY score LIMIT ?;";
+                    ps = connection.prepareStatement(query);
+                    ps.setArray(1, connection.createArrayOf("TEXT", words));
+                    ps.setArray(2, connection.createArrayOf("TEXT", tags));
+                    ps.setInt(3, minPrice);
                     ps.setInt(4, maxPrice);
+                    ps.setInt(5, ANSWER_LIMIT);
                 } else {
-                    ps.setInt(4, 2147483647); // Max PostgreSQL integer
+                    query = "SELECT id, title, price, description, contacts, score(id, ARRAY[?]::text[]) AS score FROM (SELECT filterTags(ARRAY[?]::text[]) AS id)" +
+                            " INNER JOIN Advertisement ON id = Advertisement.AdvertisementId WHERE price >= ? ORDER BY score LIMIT ?;";
+                    ps = connection.prepareStatement(query);
+                    ps.setArray(1, connection.createArrayOf("TEXT", words));
+                    ps.setArray(2, connection.createArrayOf("TEXT", tags));
+                    ps.setInt(3, minPrice);
+                    ps.setInt(4, ANSWER_LIMIT);
                 }
-                ps.setInt(5, ANSWER_LIMIT);
+
             } else {
-                query = "SELECT advertisementId, title, price, description, contacts, score(advertisementId, ARRAY[?]::text[]) AS score " +
-                        "FROM Advertisement WHERE price >= ? AND price <= ? ORDER BY score LIMIT ?;";
-                ps = connection.prepareStatement(query);
-                ps.setArray(1, connection.createArrayOf("TEXT", words));
-                ps.setInt(2, minPrice);
                 if (maxPrice != null) {
+                    query = "SELECT advertisementId, title, price, description, contacts, score(advertisementId, ARRAY[?]::text[]) AS score " +
+                            "FROM Advertisement WHERE price >= ? AND price <= ? ORDER BY score LIMIT ?;";
+                    ps = connection.prepareStatement(query);
+                    ps.setArray(1, connection.createArrayOf("TEXT", words));
+                    ps.setInt(2, minPrice);
                     ps.setInt(3, maxPrice);
+                    ps.setInt(4, ANSWER_LIMIT);
                 } else {
-                    ps.setInt(3, 2147483647); // Max PostgreSQL integer
+                    query = "SELECT advertisementId, title, price, description, contacts, score(advertisementId, ARRAY[?]::text[]) AS score " +
+                            "FROM Advertisement WHERE price >= ? ORDER BY score LIMIT ?;"; // Max PostgreSQL integer
+                    ps = connection.prepareStatement(query);
+                    ps.setArray(1, connection.createArrayOf("TEXT", words));
+                    ps.setInt(2, minPrice);
+                    ps.setInt(3, ANSWER_LIMIT);
                 }
-                ps.setInt(4, ANSWER_LIMIT);
             }
         } else {
-            if (tags != null && !Arrays.equals(tags, new String[0])) {
-                query = "SELECT id, title, price, description, contacts FROM (SELECT filterTags(ARRAY[?]::text[]) AS id) INNER JOIN Advertisement ON " +
-                        "id = Advertisement.AdvertisementId WHERE price >= ? AND price <= ? LIMIT ?;";
-                ps = connection.prepareStatement(query);
-                ps.setArray(1, connection.createArrayOf("TEXT", tags));
-                ps.setInt(2, minPrice);
+            if (tags != null && tags.length != 0) {
                 if (maxPrice != null) {
+                    query = "SELECT id, title, price, description, contacts FROM (SELECT filterTags(ARRAY[?]::text[]) AS id) INNER JOIN Advertisement ON " +
+                            "id = Advertisement.AdvertisementId WHERE price >= ? AND price <= ? LIMIT ?;";
+                    ps = connection.prepareStatement(query);
+                    ps.setArray(1, connection.createArrayOf("TEXT", tags));
+                    ps.setInt(2, minPrice);
                     ps.setInt(3, maxPrice);
+                    ps.setInt(4, ANSWER_LIMIT);
                 } else {
-                    ps.setInt(3, 2147483647); // Max PostgreSQL integer
+                    query = "SELECT id, title, price, description, contacts FROM (SELECT filterTags(ARRAY[?]::text[]) AS id) INNER JOIN Advertisement ON " +
+                            "id = Advertisement.AdvertisementId WHERE price >= ? LIMIT ?;";
+                    ps = connection.prepareStatement(query);
+                    ps.setArray(1, connection.createArrayOf("TEXT", tags));
+                    ps.setInt(2, minPrice);
+                    ps.setInt(3, ANSWER_LIMIT);
                 }
-                ps.setInt(4, ANSWER_LIMIT);
             } else {
-                query = "SELECT advertisementId, title, price, description, contacts FROM Advertisement WHERE price >= ? AND price <= ? LIMIT ?;";
-                ps = connection.prepareStatement(query);
-                ps.setInt(1, minPrice);
                 if (maxPrice != null) {
+                    query = "SELECT advertisementId, title, price, description, contacts FROM Advertisement WHERE price >= ? AND price <= ? LIMIT ?;";
+                    ps = connection.prepareStatement(query);
+                    ps.setInt(1, minPrice);
                     ps.setInt(2, maxPrice);
+                    ps.setInt(3, ANSWER_LIMIT);
                 } else {
-                    ps.setInt(2, 2147483647); // Max PostgreSQL integer
+                    query = "SELECT advertisementId, title, price, description, contacts FROM Advertisement WHERE price >= ? LIMIT ?;";
+                    ps = connection.prepareStatement(query);
+                    ps.setInt(1, minPrice);
+                    ps.setInt(2, ANSWER_LIMIT);
                 }
-                ps.setInt(3, ANSWER_LIMIT);
             }
         }
 
-        List<AdvertisementData> advertisements = new ArrayList<AdvertisementData>();
+        List<AdvertisementWithIdData> advertisements = new ArrayList<AdvertisementWithIdData>();
         result = ps.executeQuery();
         while (result.next()) {
             Integer id = result.getInt(1);
@@ -163,10 +185,10 @@ public class PostgreSQLBdManager implements BdManager {
             Integer price = result.getInt(3);
             String description = result.getString(4);
             String contacts = result.getString(5);
-            advertisements.add(new AdvertisementData(id, title, description, price, contacts, new String[]{}));
+            advertisements.add(new AdvertisementWithIdData(id, title, description, price, contacts, new String[]{}));
         }
 
-        return advertisements.toArray(new AdvertisementData[]{});
+        return advertisements.toArray(new AdvertisementWithIdData[]{});
     }
 
     public boolean createAdvertisement(AdvertisementData advertisement, UserData user) throws SQLException {
@@ -183,17 +205,17 @@ public class PostgreSQLBdManager implements BdManager {
             String query = "INSERT INTO Advertisement VALUES (DEFAULT, ?, ?, ?, ?, ?) RETURNING advertisementId;";
             PreparedStatement ps = connection.prepareStatement(query);
             ps.setInt(1, userId);
-            ps.setString(2, advertisement.title);
-            ps.setString(3, advertisement.description);
-            ps.setString(4, advertisement.contacts);
-            ps.setInt(5, advertisement.price);
+            ps.setString(2, advertisement.getTitle());
+            ps.setString(3, advertisement.getDescription());
+            ps.setString(4, advertisement.getContacts());
+            ps.setInt(5, advertisement.getPrice());
             ResultSet results = ps.executeQuery();
             results.next();
             int advertisementId = results.getInt(1);
 
             query = "INSERT INTO CountedWordToAdvertisement VALUES (?, ?, ?);";
             ps = connection.prepareStatement(query);
-            String[] adWords = String.join(" ", Arrays.asList(((advertisement.title + " " + advertisement.description).toLowerCase()).split("\n"))).split(" ");
+            String[] adWords = String.join(" ", Arrays.asList(((advertisement.getTitle() + " " + advertisement.getDescription()).toLowerCase()).split("\n"))).split(" ");
             Map<String, Integer> frequency = new HashMap<>();
             for (String el: adWords) {
                 if (!el.isEmpty() && !frequency.containsKey(el)) {
@@ -207,10 +229,10 @@ public class PostgreSQLBdManager implements BdManager {
                 ps.execute();
             }
 
-            if (advertisement.tags != null && !Arrays.equals(advertisement.tags, new String[0])) {
+            if (advertisement.getTags() != null && !Arrays.equals(advertisement.getTags(), new String[0])) {
                 query = "INSERT INTO AdvertisementTags VALUES (?, ?);";
                 ps = connection.prepareStatement(query);
-                List<String> uniqueTags = Stream.of(advertisement.tags).distinct().collect(Collectors.toList());
+                List<String> uniqueTags = Stream.of(advertisement.getTags()).distinct().collect(Collectors.toList());
                 for (String tag : uniqueTags) {
                     ps.setInt(1, advertisementId);
                     ps.setString(2, tag);
@@ -228,23 +250,23 @@ public class PostgreSQLBdManager implements BdManager {
         return true;
     }
 
-    public AdvertisementData[] userAdvertisements(UserData user) throws SQLException {
+    public AdvertisementWithIdData[] userAdvertisements(UserData user) throws SQLException {
         if (connection.isClosed()) {connect();}
         Integer userId = getUserIdSecured(user);
         String query = "SELECT advertisementId, title, price, description, contacts FROM Advertisement WHERE personId = ?;";
         PreparedStatement ps = connection.prepareStatement(query);
         ps.setInt(1, userId);
         ResultSet result = ps.executeQuery();
-        List<AdvertisementData> advertisements = new ArrayList<AdvertisementData>();
+        List<AdvertisementWithIdData> advertisements = new ArrayList<AdvertisementWithIdData>();
         while (result.next()) {
             Integer id = result.getInt(1);
             String title = result.getString(2);
             Integer price = result.getInt(3);
             String description = result.getString(4);
             String contacts = result.getString(5);
-            advertisements.add(new AdvertisementData(id, title, description, price, contacts, new String[]{}));
+            advertisements.add(new AdvertisementWithIdData(id, title, description, price, contacts, new String[]{}));
         }
-        return advertisements.toArray(new AdvertisementData[]{});
+        return advertisements.toArray(new AdvertisementWithIdData[]{});
     }
 
     public boolean deleteAdvertisement(int advertisementId, UserData user) throws SQLException {
@@ -287,30 +309,30 @@ public class PostgreSQLBdManager implements BdManager {
         return ps.executeUpdate() > 0;
     }
 
-    public AdvertisementData[] userFavourites(UserData user) throws SQLException {
+    public AdvertisementWithIdData[] userFavourites(UserData user) throws SQLException {
         if (connection.isClosed()) {connect();}
         Integer userId = getUserIdSecured(user);
         String query = "SELECT Advertisement.advertisementId, title, price, description, contacts FROM (SELECT advertisementId FROM PersonFavourite WHERE personId = ?) AS PersonFavourite INNER JOIN Advertisement ON PersonFavourite.advertisementId = Advertisement.advertisementId;";
         PreparedStatement ps = connection.prepareStatement(query);
         ps.setInt(1, userId);
         ResultSet result = ps.executeQuery();
-        List<AdvertisementData> advertisements = new ArrayList<AdvertisementData>();
+        List<AdvertisementWithIdData> advertisements = new ArrayList<AdvertisementWithIdData>();
         while (result.next()) {
             Integer id = result.getInt(1);
             String title = result.getString(2);
             Integer price = result.getInt(3);
             String description = result.getString(4);
             String contacts = result.getString(5);
-            advertisements.add(new AdvertisementData(id, title, description, price, contacts, new String[]{}));
+            advertisements.add(new AdvertisementWithIdData(id, title, description, price, contacts, new String[]{}));
         }
-        return advertisements.toArray(new AdvertisementData[]{});
+        return advertisements.toArray(new AdvertisementWithIdData[]{});
     }
 
     private Integer getUserId(UserData user) throws SQLException {
         String query = "SELECT personId FROM Person WHERE nickname = ? AND mailAddress = ?;";
         PreparedStatement ps = connection.prepareStatement(query);
-        ps.setString(1, user.nickname);
-        ps.setString(2, user.mailAddress);
+        ps.setString(1, user.getNickname());
+        ps.setString(2, user.getMailAddress());
         ResultSet results = ps.executeQuery();
         if (results.next()) {
             return results.getInt(1);
@@ -322,11 +344,11 @@ public class PostgreSQLBdManager implements BdManager {
     private Integer getUserIdSecured(UserData user) throws SQLException {
         String query = "SELECT personId, password, salt FROM Person WHERE nickname = ? AND mailAddress = ?;";
         PreparedStatement ps = connection.prepareStatement(query);
-        ps.setString(1, user.nickname);
-        ps.setString(2, user.mailAddress);
+        ps.setString(1, user.getNickname());
+        ps.setString(2, user.getMailAddress());
         ResultSet results = ps.executeQuery();
         if (results.next()) {
-            BCrypt.Result result = BCrypt.verifyer().verify((user.password + results.getString(3)).toCharArray(), results.getString(2));
+            BCrypt.Result result = BCrypt.verifyer().verify((user.getPassword() + results.getString(3)).toCharArray(), results.getString(2));
             if (result.verified) {
                 return results.getInt(1);
             } else {

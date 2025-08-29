@@ -1,10 +1,12 @@
 package org.example.Commands;
 
+import org.example.DataContainers.ServerCommandData.AbstractServerCommandData;
+import org.example.DataContainers.ServerCommandData.ServerCommandData;
+import org.example.DataContainers.ServerCommandData.ServerLoginCommandData;
 import org.example.Modules.ClientCommunicationModule;
 import org.example.Modules.ConsoleInputModule;
 import org.example.Modules.ConsoleOutputModule;
 import org.example.DataContainers.UserData;
-import org.example.ServerCommands.*;
 
 import java.util.Map;
 
@@ -29,18 +31,18 @@ public class ConsoleLoginCommand extends AbstractConsoleCommand {
     }
 
     public void execute() throws Exception {
-        ServerLoginCommand command = null;
-        ServerCommand undefinedCommand = communicationModule.executeCommand(new ServerLoginCommand(this.nickname, this.mailAddress, this.password));
-        if (undefinedCommand.getError() != null) {
-            throw undefinedCommand.getError();
+        ServerLoginCommandData command = null;
+        ServerCommandData undefinedCommand = communicationModule.executeCommand(new ServerLoginCommandData(this.nickname, this.mailAddress, this.password));
+        if (undefinedCommand.getErrorMessage() != null) {
+            throw new Exception(undefinedCommand.getErrorMessage());
         } else if (undefinedCommand.getErrorMessage() != null) {
             throw new Exception(undefinedCommand.getErrorMessage());
         } else {
-            command = (ServerLoginCommand) undefinedCommand;
+            command = (ServerLoginCommandData) undefinedCommand;
         }
         if (command.getSuccessState()) {
             user.setAllData(this.nickname, this.mailAddress, this.password);
-            this.user.isLogged = true;
+            this.user.setLoginState(true);
             outputModule.outputLine("Вход успешно выполнен!");
         } else {
             outputModule.outputLine("Неверный пароль!");

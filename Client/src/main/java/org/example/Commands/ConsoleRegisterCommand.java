@@ -1,10 +1,11 @@
 package org.example.Commands;
 
+import org.example.DataContainers.ServerCommandData.AbstractServerCommandData;
+import org.example.DataContainers.ServerCommandData.ServerCommandData;
+import org.example.DataContainers.ServerCommandData.ServerRegisterCommandData;
 import org.example.Modules.ClientCommunicationModule;
 import org.example.Modules.ConsoleInputModule;
 import org.example.Modules.ConsoleOutputModule;
-import org.example.ServerCommands.ServerCommand;
-import org.example.ServerCommands.ServerRegisterCommand;
 
 import java.util.Map;
 
@@ -27,14 +28,14 @@ public class ConsoleRegisterCommand extends AbstractConsoleCommand {
     }
 
     public void execute() throws Exception {
-        ServerRegisterCommand command = null;
-        ServerCommand undefinedCommand = communicationModule.executeCommand(new ServerRegisterCommand(this.nickname, this.mailAddress, this.password));
-        if (undefinedCommand.getError() != null) {
-            throw undefinedCommand.getError();
+        ServerRegisterCommandData command = null;
+        ServerCommandData undefinedCommand = communicationModule.executeCommand(new ServerRegisterCommandData(this.nickname, this.mailAddress, this.password));
+        if (undefinedCommand.getErrorMessage() != null) {
+            throw new Exception(undefinedCommand.getErrorMessage());
         } else if (undefinedCommand.getErrorMessage() != null) {
             throw new Exception(undefinedCommand.getErrorMessage());
         } else {
-            command = (ServerRegisterCommand) undefinedCommand;
+            command = (ServerRegisterCommandData) undefinedCommand;
         }
         if (command.getSuccessState()) {
             outputModule.outputLine("Пользователь " + this.nickname + " успешно зарегистрирован!");

@@ -1,12 +1,13 @@
 package org.example.Commands;
 
+import org.example.DataContainers.ServerCommandData.AbstractServerCommandData;
+import org.example.DataContainers.ServerCommandData.ServerCommandData;
+import org.example.DataContainers.ServerCommandData.ServerDeleteAdvertisementCommandData;
 import org.example.Modules.ClientCommunicationModule;
 import org.example.Modules.ConsoleInputModule;
 import org.example.Modules.ConsoleOutputModule;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.example.DataContainers.UserData;
-import org.example.ServerCommands.ServerCommand;
-import org.example.ServerCommands.ServerDeleteAdvertisementCommand;
 
 import java.util.Map;
 
@@ -27,18 +28,18 @@ public class ConsoleDeleteAdvertisementCommand extends AbstractConsoleCommand {
     }
 
     public void execute() throws Exception {
-        ServerDeleteAdvertisementCommand command = null;
-        if (!this.user.isLogged) {
+        ServerDeleteAdvertisementCommandData command = null;
+        if (!this.user.getLoginState()) {
             outputModule.outputLine("Для удаления объявлений необходимо выполнить вход в систему (команда /login)");
             return;
         }
-        ServerCommand undefinedCommand = communicationModule.executeCommand(new ServerDeleteAdvertisementCommand(advertisementId, this.user));
-        if (undefinedCommand.getError() != null) {
-            throw undefinedCommand.getError();
+        ServerCommandData undefinedCommand = communicationModule.executeCommand(new ServerDeleteAdvertisementCommandData(advertisementId, this.user));
+        if (undefinedCommand.getErrorMessage() != null) {
+            throw new Exception(undefinedCommand.getErrorMessage());
         } else if (undefinedCommand.getErrorMessage() != null) {
             throw new Exception(undefinedCommand.getErrorMessage());
         } else {
-            command = (ServerDeleteAdvertisementCommand) undefinedCommand;
+            command = (ServerDeleteAdvertisementCommandData) undefinedCommand;
         }
         if (command.getSuccessState()) {
             outputModule.outputLine("Объявление успешно удалено!");

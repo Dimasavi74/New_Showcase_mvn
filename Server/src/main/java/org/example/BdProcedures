@@ -1,0 +1,42 @@
+CREATE FUNCTION N() RETURNS integer AS $$
+    SELECT COUNT(DISTINCT AdvertisementId) FROM CountedWordToAdvertisement;
+$$ LANGUAGE SQL;
+
+CREATE FUNCTION n(qi text) RETURNS integer AS $$
+    SELECT COUNT(advertisementId) FROM CountedWordToAdvertisement WHERE word = qi;
+$$ LANGUAGE SQL;
+
+CREATE FUNCTION IDF(qi text) RETURNS float AS $$
+    SELECT LN(((N() - n(qi) + 0.5) / (n(qi) + 0.5)) + 1);
+$$ LANGUAGE SQL;
+
+CREATE FUNCTION f(qi text, D integer) RETURNS integer AS $$
+    SELECT numberOfWords FROM CountedWordToAdvertisement
+ 	WHERE advertisementId = D AND word = qi;
+$$ LANGUAGE SQL;
+
+CREATE FUNCTION lenD(D integer) RETURNS integer AS $$
+    SELECT SUM(numberOfWords) FROM CountedWordToAdvertisement
+ 	WHERE advertisementId = D;
+$$ LANGUAGE SQL;
+
+CREATE FUNCTION avgdl() RETURNS float AS $$
+    SELECT (SUM(numberOfWords) / (N() + 0.0)) FROM CountedWordToAdvertisement;
+$$ LANGUAGE SQL;
+
+CREATE FUNCTION normDl(b float, D integer) RETURNS float AS $$
+    SELECT (0.0 + 1 - b + b * (lenD(D) / avgDl()));
+$$ LANGUAGE SQL;
+
+CREATE FUNCTION FRQ(qi text, D integer, b float, k1 float) RETURNS float AS $$
+    SELECT 0.0 + ((f(qi, D) * (k1 + 1)) / (f(qi, D) + k1 * normDl(b, D)));
+$$ LANGUAGE SQL;
+
+CREATE FUNCTION score(D integer, Q text[]) RETURNS float AS $$
+    SELECT SUM((SELECT (IDF(qi) * FRQ(qi, D, 0.75, 2.0)))) FROM unnest(Q) AS qi;
+$$ LANGUAGE SQL;
+
+CREATE FUNCTION filterTags(tags text[]) RETURNS integer[] AS $$
+    SELECT ARRAY[(SELECT AdvertisementId FROM AdvertisementTags WHERE tag IN (SELECT * FROM unnest(tags)))]::integer[];
+$$ LANGUAGE SQL;
+SELECT filterTags(ARRAY['fr']::text[]) AS t1;

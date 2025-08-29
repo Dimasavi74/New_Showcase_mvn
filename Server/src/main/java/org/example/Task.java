@@ -1,11 +1,12 @@
 package org.example;
 
-import org.example.ServerCommands.ServerCommand;
-import org.example.ServerCommands.ServerEmptyCommand;
+import org.example.DataContainers.ServerCommandData.ServerCommandData;
+import org.example.ServerCommands.*;
 
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.*;
+import java.util.HashMap;
 import java.util.Set;
 
 public class Task implements Runnable {
@@ -14,12 +15,27 @@ public class Task implements Runnable {
     private BdManager bdManager;
     private final int READING_DATA_SIZE_BUFFER_CAPACITY = 4;
     private Set<SelectionKey> blockedKeys;
+    private HashMap<String, ServerCommand> serverCommandObjects = new HashMap<>();
+
 
     public Task(int id, SelectionKey k, BdManager bd, Set<SelectionKey> blockedKeys) {
         this.id = id;
         this.key = k;
         this.bdManager = bd;
         this.blockedKeys = blockedKeys;
+
+        serverCommandObjects.put("addFavourite", new ServerAddFavouriteCommand());
+        serverCommandObjects.put("createAdvertisement", new ServerCreateAdvertisementCommand());
+        serverCommandObjects.put("deleteAdvertisement", new ServerDeleteAdvertisementCommand());
+        serverCommandObjects.put("deleteUser", new ServerDeleteUserCommand());
+        serverCommandObjects.put("echo", new ServerEchoCommand());
+        serverCommandObjects.put("empty", new ServerEmptyCommand());
+        serverCommandObjects.put("login", new ServerLoginCommand());
+        serverCommandObjects.put("myAdvertisements", new ServerMyAdvertisementsCommand());
+        serverCommandObjects.put("myFavourites", new ServerMyFavouritesCommand());
+        serverCommandObjects.put("register", new ServerRegisterCommand());
+        serverCommandObjects.put("removeFavourite", new ServerRemoveFavouriteCommand());
+        serverCommandObjects.put("search", new ServerSearchCommand());
     }
 
     public int getId(){
@@ -102,22 +118,23 @@ public class Task implements Runnable {
             dataBuffer.flip();
         } catch (IOException e) {
             command = new ServerEmptyCommand();
-            command.setError(e);
+            command.setErrorMessage(e.getMessage());
 //            throw new RuntimeException("Ошибка при получении данных клиента", e); // !!! Убрать на игнорирование!
         }
 
         try (ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(dataBuffer.array()))) {
-            command = (ServerCommand) ois.readObject();
+            ServerCommandData commandData = (ServerCommandData) ois.readObject();
+            command = serverCommandObjects.get(commandData.getCommandName()).setDataByFields(commandData);
             System.out.println("Назначаем бд-менеджер");
             command.setBdManager(bdManager);
             System.out.println("Исполняем команду");
             command.execute();
-            System.out.println("Ошибка при исполнении: " + command.getError());
+            System.out.println("Ошибка при исполнении: " + command.getErrorMessage());
             data.setCommand(command);
             System.out.println("Получен объект: " + command);
         } catch (ClassNotFoundException | IOException e) {
             command = new ServerEmptyCommand();
-            command.setError(e);
+            command.setErrorMessage(e.getMessage());
 //            throw new RuntimeException("Ошибка при десериализации объекта на сервере", e); // !!! Убрать на игнорирование!
         }
 
@@ -153,7 +170,7 @@ public class Task implements Runnable {
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
              ObjectOutputStream oos = new ObjectOutputStream(baos)) {
 
-            oos.writeObject(data.getCommand());
+            oos.writeObject(data.getCommand().generateServerCommandData());
             oos.flush();
             byte[] sendingData = baos.toByteArray();
 

@@ -42,7 +42,7 @@ public class ClientProperties {
         return inputSyntax;
     }
 
-    public void setINPUT_SYNTAXES(String inputSyntax){
+    public void setInputSyntaxes(String inputSyntax){
         if (Arrays.asList(INPUT_SYNTAXES).contains(inputSyntax)){
             this.inputSyntax = inputSyntax;
         } else {

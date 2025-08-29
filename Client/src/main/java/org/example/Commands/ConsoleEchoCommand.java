@@ -1,10 +1,11 @@
 package org.example.Commands;
 
+import org.example.DataContainers.ServerCommandData.AbstractServerCommandData;
+import org.example.DataContainers.ServerCommandData.ServerCommandData;
+import org.example.DataContainers.ServerCommandData.ServerEchoCommandData;
 import org.example.Modules.ClientCommunicationModule;
 import org.example.Modules.ConsoleInputModule;
 import org.example.Modules.ConsoleOutputModule;
-import org.example.ServerCommands.ServerCommand;
-import org.example.ServerCommands.ServerEchoCommand;
 
 import java.util.Map;
 
@@ -23,14 +24,14 @@ public class ConsoleEchoCommand extends AbstractConsoleCommand {
     }
 
     public void execute() throws Exception {
-        ServerEchoCommand command = null;
-        ServerCommand undefinedCommand = communicationModule.executeCommand(new ServerEchoCommand(this.line));
-        if (undefinedCommand.getError() != null) {
-            throw undefinedCommand.getError();
+        ServerEchoCommandData command = null;
+        ServerCommandData undefinedCommand = communicationModule.executeCommand(new ServerEchoCommandData(this.line));
+        if (undefinedCommand.getErrorMessage() != null) {
+            throw new Exception(undefinedCommand.getErrorMessage());
         } else if (undefinedCommand.getErrorMessage() != null) {
             throw new Exception(undefinedCommand.getErrorMessage());
         } else {
-            command = (ServerEchoCommand) undefinedCommand;
+            command = (ServerEchoCommandData) undefinedCommand;
         }
         outputModule.outputLine(command.getLine());
     }

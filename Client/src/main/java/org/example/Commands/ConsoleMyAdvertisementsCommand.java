@@ -1,11 +1,13 @@
 package org.example.Commands;
 
+import org.example.DataContainers.AdvertisementWithIdData;
+import org.example.DataContainers.ServerCommandData.AbstractServerCommandData;
+import org.example.DataContainers.ServerCommandData.ServerCommandData;
+import org.example.DataContainers.ServerCommandData.ServerMyAdvertisementsCommandData;
 import org.example.Modules.ClientCommunicationModule;
 import org.example.Modules.ConsoleOutputModule;
 import org.example.DataContainers.AdvertisementData;
 import org.example.DataContainers.UserData;
-import org.example.ServerCommands.ServerCommand;
-import org.example.ServerCommands.ServerMyAdvertisementsCommand;
 
 import java.util.Arrays;
 import java.util.Map;
@@ -21,23 +23,23 @@ public class ConsoleMyAdvertisementsCommand extends AbstractConsoleCommand {
     }
 
     public void execute() throws Exception {
-        ServerMyAdvertisementsCommand command = null;
-        if (!this.user.isLogged) {
+        ServerMyAdvertisementsCommandData command = null;
+        if (!this.user.getLoginState()) {
             outputModule.outputLine("Для вывода ваших объявлений необходимо выполнить вход в систему (команда /login)");
             return;
         }
-        ServerCommand undefinedCommand = communicationModule.executeCommand(new ServerMyAdvertisementsCommand(this.user));
-        if (undefinedCommand.getError() != null) {
-            throw undefinedCommand.getError();
+        ServerCommandData undefinedCommand = communicationModule.executeCommand(new ServerMyAdvertisementsCommandData(this.user));
+        if (undefinedCommand.getErrorMessage() != null) {
+            throw new Exception(undefinedCommand.getErrorMessage());
         } else if (undefinedCommand.getErrorMessage() != null) {
             throw new Exception(undefinedCommand.getErrorMessage());
         } else {
-            command = (ServerMyAdvertisementsCommand) undefinedCommand;
+            command = (ServerMyAdvertisementsCommandData) undefinedCommand;
         }
-        if (command.getFoundAdvertisements() != null && !Arrays.equals(command.getFoundAdvertisements(), new AdvertisementData[]{})) {
+        if (command.getFoundAdvertisements() != null && !Arrays.equals(command.getFoundAdvertisements(), new AdvertisementWithIdData[]{})) {
             outputModule.outputLine("Ваши объявления:");
             for (AdvertisementData advertisement: command.getFoundAdvertisements()) {
-                outputModule.outputLine("(" + advertisement.id + ") " + advertisement.title + " " + advertisement.price);
+                outputModule.outputLine("(" + ((AdvertisementWithIdData) advertisement).getId() + ") " + advertisement.getTitle() + " " + advertisement.getPrice());
             }
         } else {
             outputModule.outputLine("Вы еще не создали ни одного объявления! (команда /createAdvertisement)");

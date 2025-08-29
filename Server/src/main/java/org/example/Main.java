@@ -18,7 +18,7 @@ public class Main {
         String user = console.nextLine();
         System.out.print("Введите пароль от бд: ");
         String password = console.nextLine();
-        BdManager bdManager = new PostgreSQLBdManager(user, password, "jdbc:postgresql://pg:5432/studs");
+        BdManager bdManager = new PostgreSQLBdManager(user, password, "jdbc:postgresql://localhost:5432/studs");
         ServerCommunicationModule communicationModule = new ServerCommunicationModule(bdManager, port);
         ServerApp app = new ServerApp(communicationModule, executorService);
         app.run();

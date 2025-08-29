@@ -1,12 +1,13 @@
 package org.example.Commands;
 
+import org.example.DataContainers.ServerCommandData.ServerAddFavouriteCommandData;
+import org.example.DataContainers.ServerCommandData.AbstractServerCommandData;
+import org.example.DataContainers.ServerCommandData.ServerCommandData;
 import org.example.Modules.ClientCommunicationModule;
 import org.example.Modules.ConsoleInputModule;
 import org.example.Modules.ConsoleOutputModule;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.example.DataContainers.UserData;
-import org.example.ServerCommands.ServerAddFavouriteCommand;
-import org.example.ServerCommands.ServerCommand;
 
 import java.util.Map;
 
@@ -27,18 +28,18 @@ public class ConsoleAddFavouriteCommand extends AbstractConsoleCommand {
     }
 
     public void execute() throws Exception {
-        if (!this.user.isLogged) {
+        if (!this.user.getLoginState()) {
             outputModule.outputLine("Для добавления объявлений в понравившиеся необходимо войти (команда /login)");
             return;
         }
-        ServerAddFavouriteCommand command = null;
-        ServerCommand undefinedCommand = communicationModule.executeCommand(new ServerAddFavouriteCommand(advertisementId, this.user));
-        if (undefinedCommand.getError() != null) {
-            throw undefinedCommand.getError();
+        ServerAddFavouriteCommandData command = null;
+        ServerCommandData undefinedCommand = communicationModule.executeCommand(new ServerAddFavouriteCommandData(advertisementId, this.user));
+        if (undefinedCommand.getErrorMessage() != null) {
+            throw new Exception(undefinedCommand.getErrorMessage());
         } else if (undefinedCommand.getErrorMessage() != null) {
             throw new Exception(undefinedCommand.getErrorMessage());
         } else {
-            command = (ServerAddFavouriteCommand) undefinedCommand;
+            command = (ServerAddFavouriteCommandData) undefinedCommand;
         }
         if (command.getSuccessState()) {
             outputModule.outputLine("Объявление успешно добавлено!");

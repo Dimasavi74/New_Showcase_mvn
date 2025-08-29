@@ -14,14 +14,14 @@ public class ConsoleLogoutCommand extends AbstractConsoleCommand {
     }
 
     public void execute() {
-        if (!this.user.isLogged) {
+        if (!this.user.getLoginState()) {
             outputModule.outputLine("Для того, чтобы выйти из системы, необходимо войти в систему (команда /login)");
             return;
         }
-        user.nickname = "";
-        user.mailAddress = "";
-        user.password = "";
-        user.isLogged = false;
+        user.setNickname("");
+        user.setMailAddress("");
+        user.setPassword("");
+        user.setLoginState(false);
         outputModule.outputLine("Вы вышли из аккаунта!");
     }
 
