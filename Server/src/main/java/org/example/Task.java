@@ -75,15 +75,15 @@ public class Task implements Runnable {
             ClientData data = new ClientData();
             clientKey.attach(data);
         }  catch (ClosedChannelException e) {
-            System.out.println("Канал закрыт, регистрация ключа на чтение невозможна!");
+            System.out.println("Канал закрыт, регистрация ключа на чтение невозможна!: " + e.getMessage());
             key.cancel();
 //            throw new RuntimeException(e); // !!! Убрать на игнорирование
         } catch (CancelledKeyException e) {
-            System.out.println("Ключ отменен, регистрация на чтение невозможна!");
+            System.out.println("Ключ отменен, регистрация на чтение невозможна!: " + e.getMessage());
             key.cancel();
 //            throw new RuntimeException(e); // !!! Убрать на игнорирование
         } catch (IOException e) {
-            System.out.println("Подключение не удалось!");
+            System.out.println("Подключение не удалось!: " + e.getMessage());
             key.cancel();
 //            throw new RuntimeException(e); // !!!! Убрать на игнорирование
         } finally {
@@ -107,7 +107,9 @@ public class Task implements Runnable {
         try {
             System.out.println("Начато чтение данных клиента");
             lengthBuffer = ByteBuffer.allocate(READING_DATA_SIZE_BUFFER_CAPACITY);
-            sc.read(lengthBuffer);
+            while (lengthBuffer.hasRemaining()) {
+                sc.read(lengthBuffer);
+            }
             lengthBuffer.flip();
             int dataLength = lengthBuffer.getInt();
             System.out.println("Размер входящих данных: " + dataLength);
@@ -117,6 +119,7 @@ public class Task implements Runnable {
             }
             dataBuffer.flip();
         } catch (IOException e) {
+            System.out.println("Ошибка во время чтения данных клиента!: " + e.getMessage());
             command = new ServerEmptyCommand();
             command.setErrorMessage(e.getMessage());
 //            throw new RuntimeException("Ошибка при получении данных клиента", e); // !!! Убрать на игнорирование!
@@ -133,6 +136,7 @@ public class Task implements Runnable {
             data.setCommand(command);
             System.out.println("Получен объект: " + command);
         } catch (ClassNotFoundException | IOException e) {
+            System.out.println("Ошибка при десериализации объекта!: " + e.getMessage());
             command = new ServerEmptyCommand();
             command.setErrorMessage(e.getMessage());
 //            throw new RuntimeException("Ошибка при десериализации объекта на сервере", e); // !!! Убрать на игнорирование!
@@ -150,7 +154,7 @@ public class Task implements Runnable {
             key.cancel();
 //            throw new RuntimeException(e); // !!! Убрать на игнорирование!
         } catch (CancelledKeyException e) {
-            System.out.println("Ключ отменен, регистрация на запись невозможна!");
+            System.out.println("Ключ отменен, регистрация на запись невозможна! " + e.getMessage());
             key.cancel();
 //            throw new RuntimeException(e); // !!! Убрать на игнорирование
         } finally {
@@ -183,12 +187,19 @@ public class Task implements Runnable {
                 sc.write(buffer);
             }
             System.out.println("Запись выполнена успешно!");
-            sc.close();
+
+            SelectionKey clientKey = sc.register(key.selector(), SelectionKey.OP_READ);
+            clientKey.attach(new ClientData());
+            System.out.println("Ключ на чтение зарегистрирован!: " + clientKey);
         } catch (IOException e) {
-            System.out.println("Ошибка при отправке!");
-//            throw new RuntimeException(e); // !!! Убрать на игнорирование!
-        } finally {
+            System.out.println("Ошибка передачи при отправке!: " + e.getMessage());
             key.cancel();
+//            throw new RuntimeException(e); // !!! Убрать на игнорирование!
+        } catch (Exception e) {
+            System.out.println("Ошибка при отправке!: " + e.getMessage());
+            key.cancel();
+        }
+        finally {
             blockedKeys.remove(key);
             key.selector().wakeup();
         }

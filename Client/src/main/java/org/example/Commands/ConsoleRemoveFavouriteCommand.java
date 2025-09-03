@@ -1,8 +1,8 @@
 package org.example.Commands;
 
-import org.example.DataContainers.ServerCommandData.AbstractServerCommandData;
 import org.example.DataContainers.ServerCommandData.ServerCommandData;
 import org.example.DataContainers.ServerCommandData.ServerDeleteAdvertisementCommandData;
+import org.example.DataContainers.ServerCommandData.ServerRemoveFavouriteCommandData;
 import org.example.Modules.ClientCommunicationModule;
 import org.example.Modules.ConsoleInputModule;
 import org.example.Modules.ConsoleOutputModule;
@@ -28,18 +28,18 @@ public class ConsoleRemoveFavouriteCommand extends AbstractConsoleCommand {
     }
 
     public void execute() throws Exception {
-        ServerDeleteAdvertisementCommandData command = null;
+        ServerRemoveFavouriteCommandData command = null;
         if (!this.user.getLoginState()) {
             outputModule.outputLine("Для удаления объявлений из понравившихся необходимо выполнить вход в систему (команда /login)");
             return;
         }
-        ServerCommandData undefinedCommand = communicationModule.executeCommand(new ServerDeleteAdvertisementCommandData(advertisementId, this.user));
+        ServerCommandData undefinedCommand = communicationModule.executeCommand(new ServerRemoveFavouriteCommandData(advertisementId, this.user));
         if (undefinedCommand.getErrorMessage() != null) {
             throw new Exception(undefinedCommand.getErrorMessage());
         } else if (undefinedCommand.getErrorMessage() != null) {
             throw new Exception(undefinedCommand.getErrorMessage());
         } else {
-            command = (ServerDeleteAdvertisementCommandData) undefinedCommand;
+            command = (ServerRemoveFavouriteCommandData) undefinedCommand;
         }
         if (command.getSuccessState()) {
             outputModule.outputLine("Объявление успешно удалено!");

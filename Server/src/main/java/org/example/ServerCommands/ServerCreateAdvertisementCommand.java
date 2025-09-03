@@ -1,7 +1,6 @@
 package org.example.ServerCommands;
 
 import org.example.DataContainers.AdvertisementData;
-import org.example.DataContainers.ServerCommandData.ServerAddFavouriteCommandData;
 import org.example.DataContainers.ServerCommandData.ServerCommandData;
 import org.example.DataContainers.ServerCommandData.ServerCreateAdvertisementCommandData;
 import org.example.DataContainers.UserData;

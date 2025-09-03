@@ -12,26 +12,27 @@ import java.util.Scanner;
 
 public class ConsoleInputModule implements InputModule {
     protected ClientProperties properties;
+    protected ConsoleOutputModule outputModule;
+    protected Scanner input;
 
-    public ConsoleInputModule(ClientProperties properties) {
+    public ConsoleInputModule(ClientProperties properties, ConsoleOutputModule outputModule) {
         this.properties = properties;
+        this.outputModule = outputModule;
+        this.input = new Scanner(System.in);
     }
 
     public String inputLine(){
-        Scanner input = new Scanner(System.in);
         String text = input.nextLine();
         return text;
     }
 
     public String inputLineWithDescription(String description) {
-        Scanner input = new Scanner(System.in);
-        System.out.print(description);
+        outputModule.outputLine(description);
         String text = input.nextLine();
         return text;
     }
 
     public String inputMultipleLines(){
-        Scanner input = new Scanner(System.in);
         String text = input.nextLine();
         List<String> textList = new ArrayList<>();
         textList.add(text);
@@ -44,17 +45,8 @@ public class ConsoleInputModule implements InputModule {
     }
 
     public String inputMultipleLinesWithDescription(String description){
-        Scanner input = new Scanner(System.in);
         System.out.print(description);
-        String text = input.nextLine();
-        List<String> textList = new ArrayList<>();
-        textList.add(text);
-        while (!text.contains(properties.getMultipleInputEndSymbol())) {
-            text = input.nextLine();
-            textList.add(text);
-        }
-        String line =  String.join(" \n", textList).replace(properties.getMultipleInputEndSymbol().charAt(0), ' ');
-        return line;
+        return inputMultipleLines();
     }
 
     public String readFile(String filePath) throws IOException {

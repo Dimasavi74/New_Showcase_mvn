@@ -1,6 +1,7 @@
 package org.example.Commands;
 
 import org.example.ClientProperties;
+import org.example.InputModes;
 import org.example.Modules.ConsoleOutputModule;
 
 import java.util.Map;
@@ -14,11 +15,11 @@ public class ConsoleChangeInputModeCommand extends AbstractConsoleCommand {
     }
 
     public void execute() {
-        if (properties.getInputMode().equals("singleLine")) {
-            properties.setInputMode("multipleLines");
+        if (properties.getInputMode().equals(InputModes.SINGLE_LINE)) {
+            properties.setInputMode(InputModes.MULTIPLE_LINES);
             outputModule.outputLine("Режим изменен на многострочный");
         } else {
-            properties.setInputMode("singleLine");
+            properties.setInputMode(InputModes.SINGLE_LINE);
             outputModule.outputLine("Режим изменен на однострочный");
         }
     }

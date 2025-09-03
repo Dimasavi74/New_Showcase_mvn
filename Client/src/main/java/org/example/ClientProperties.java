@@ -3,11 +3,9 @@ package org.example;
 import java.util.Arrays;
 
 public class ClientProperties {
-    private final String[] INPUT_MODES = {"singleLine", "multipleLines"};
-    private final String[] INPUT_SYNTAXES = {"variableNames"};
     protected String multipleInputEndSymbol = ";";
-    protected String inputMode = "singleLine";
-    protected String inputSyntax = "variableNames";
+    protected InputModes inputMode = InputModes.SINGLE_LINE;
+    protected InputSyntaxes inputSyntax = InputSyntaxes.VARIABLE_NAMES;
     public Boolean isRunning = false;
 
     public void setMultipleInputEndSymbol(String multipleInputEndSymbol){
@@ -18,36 +16,21 @@ public class ClientProperties {
         return multipleInputEndSymbol;
     }
 
-    public String[] getInputModes(){
-        return INPUT_MODES;
-    }
 
-    public String getInputMode(){
+    public InputModes getInputMode(){
         return inputMode;
     }
 
-    public void setInputMode(String inputMode){
-        if (Arrays.asList(INPUT_MODES).contains(inputMode)){
-            this.inputMode = inputMode;
-        } else {
-            throw new RuntimeException("Undefined input mode. Check the INPUT_MODES array and choose the right one. (method getInputModes())");
-        }
+    public void setInputMode(InputModes inputMode){
+        this.inputMode = inputMode;
     }
 
-    public String[] getInputSyntaxes(){
-        return INPUT_SYNTAXES;
-    }
-
-    public String getInputSyntax(){
+    public InputSyntaxes getInputSyntax(){
         return inputSyntax;
     }
 
-    public void setInputSyntaxes(String inputSyntax){
-        if (Arrays.asList(INPUT_SYNTAXES).contains(inputSyntax)){
-            this.inputSyntax = inputSyntax;
-        } else {
-            throw new RuntimeException("Undefined input syntax. Check the INPUT_SYNTAXES array and choose the right one. (method getInputSyntaxes())");
-        }
+    public void setInputSyntax(InputSyntaxes inputSyntax){
+        this.inputSyntax = inputSyntax;
     }
 
 }

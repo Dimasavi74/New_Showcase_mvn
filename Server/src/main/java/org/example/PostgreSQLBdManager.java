@@ -300,8 +300,10 @@ public class PostgreSQLBdManager implements BdManager {
     }
 
     public boolean removeFavourite(UserData user, int advertisementId) throws SQLException {
+        System.out.println(123123123);
         if (connection.isClosed()) {connect();}
         int userId = getUserIdSecured(user);
+        System.out.println(advertisementId + " " + userId);
         String query = "DELETE FROM PersonFavourite WHERE advertisementId = ? AND personId = ?;";
         PreparedStatement ps = connection.prepareStatement(query);
         ps.setInt(1, advertisementId);

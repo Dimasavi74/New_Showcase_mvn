@@ -2,7 +2,6 @@ package org.example.ServerCommands;
 
 import org.example.DataContainers.AdvertisementData;
 import org.example.DataContainers.ServerCommandData.ServerCommandData;
-import org.example.DataContainers.ServerCommandData.ServerLoginCommandData;
 import org.example.DataContainers.ServerCommandData.ServerMyAdvertisementsCommandData;
 import org.example.DataContainers.UserData;
 

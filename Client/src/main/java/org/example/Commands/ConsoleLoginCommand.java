@@ -1,6 +1,5 @@
 package org.example.Commands;
 
-import org.example.DataContainers.ServerCommandData.AbstractServerCommandData;
 import org.example.DataContainers.ServerCommandData.ServerCommandData;
 import org.example.DataContainers.ServerCommandData.ServerLoginCommandData;
 import org.example.Modules.ClientCommunicationModule;

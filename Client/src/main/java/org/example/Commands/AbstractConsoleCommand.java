@@ -47,7 +47,7 @@ public abstract class AbstractConsoleCommand implements Command {
                 outputModule.outputLine("Пользователь уже добавлен!");
             } else {
                 System.out.println(e.getMessage());
-                throw new RuntimeException(e);
+//                throw new RuntimeException(e);
             }
         }
     }

@@ -1,6 +1,5 @@
 package org.example.Modules;
 
-import org.example.DataContainers.ServerCommandData.AbstractServerCommandData;
 import org.example.DataContainers.ServerCommandData.ServerCommandData;
 import org.example.DataContainers.ServerCommandData.ServerEmptyCommandData;
 
@@ -30,9 +29,17 @@ public class ClientCommunicationModule {
         ServerCommandData newCommandData;
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
              ObjectOutputStream oos = new ObjectOutputStream(baos)) {
-            channel = SocketChannel.open();
-            channel.connect(new InetSocketAddress(host, port));
+            if (!channel.isOpen()) {
+                channel = SocketChannel.open();
+            }
+            if (!channel.isConnected()) {
+                channel.connect(new InetSocketAddress(host, port));
+            }
             channel.configureBlocking(true);
+
+//            channel = SocketChannel.open();
+//            channel.connect(new InetSocketAddress(host, port));
+//            channel.configureBlocking(true);
 
             oos.writeObject(command);
             oos.flush();
@@ -47,6 +54,7 @@ public class ClientCommunicationModule {
                 channel.write(buffer);
             }
         } catch (IOException e) {
+            try {channel.close();} catch (IOException ignored) {}
             newCommandData = new ServerEmptyCommandData();
             newCommandData.setErrorMessage(e.getMessage());
             return newCommandData;
@@ -57,7 +65,9 @@ public class ClientCommunicationModule {
         ByteBuffer dataBuffer = ByteBuffer.allocate(0);
         try {
             lengthBuffer = ByteBuffer.allocate(READING_DATA_SIZE_BUFFER_CAPACITY);
-            channel.read(lengthBuffer);
+            while (lengthBuffer.hasRemaining()) {
+                channel.read(lengthBuffer);
+            }
             lengthBuffer.flip();
             int dataLength = lengthBuffer.getInt();
             dataBuffer = ByteBuffer.allocate(dataLength);
@@ -76,13 +86,12 @@ public class ClientCommunicationModule {
         try (ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(dataBuffer.array()))) {
             newCommandData = (ServerCommandData) ois.readObject();;
         } catch (ClassNotFoundException | IOException e) {
+            try {channel.close();} catch (IOException ignored) {}
+
             newCommandData = new ServerEmptyCommandData();
             newCommandData.setErrorMessage(e.getMessage());
 //            throw new RuntimeException("Ошибка при десериализации объекта на клиенте", e); // !!! Передать команде на вывод
         }
-        try {
-            channel.close();
-        } catch (IOException ignored) {}
         return newCommandData;
     }
 }

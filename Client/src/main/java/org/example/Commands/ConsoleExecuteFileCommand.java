@@ -32,7 +32,7 @@ public class ConsoleExecuteFileCommand extends AbstractConsoleCommand {
             String text = "";
             String inputText = this.inputModule.readFile(this.filePath);
             switch (properties.getInputMode()) {
-                case "singleLine":
+                case SINGLE_LINE:
                     text = "";
                     for (int i = 0; i < inputText.length(); i++) {
                         if (inputText.charAt(i) != '\n') {
@@ -43,7 +43,7 @@ public class ConsoleExecuteFileCommand extends AbstractConsoleCommand {
                         }
                     }
                     break;
-                case "multipleLines":
+                case MULTIPLE_LINES:
                     text = "";
                     for (int i = 0; i < inputText.length(); i++) {
                         if (!String.valueOf(inputText.charAt(i)).equals(properties.getMultipleInputEndSymbol())) {
@@ -60,7 +60,7 @@ public class ConsoleExecuteFileCommand extends AbstractConsoleCommand {
         for (String line: lines) {
             Map<String, String> parsedText;
             switch (properties.getInputSyntax()) {
-                case "variableNames":
+                case VARIABLE_NAMES:
                     parsedText = this.parsingModule.parseVariableNamesSyntaxLine(line);
                     break;
                 default:

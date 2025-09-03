@@ -1,7 +1,6 @@
 package org.example.ServerCommands;
 
 import org.example.DataContainers.ServerCommandData.ServerCommandData;
-import org.example.DataContainers.ServerCommandData.ServerRegisterCommandData;
 import org.example.DataContainers.ServerCommandData.ServerRemoveFavouriteCommandData;
 import org.example.DataContainers.UserData;
 

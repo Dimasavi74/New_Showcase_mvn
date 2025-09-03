@@ -1,8 +1,6 @@
 package org.example.ServerCommands;
 
 import org.example.DataContainers.ServerCommandData.ServerCommandData;
-import org.example.DataContainers.ServerCommandData.ServerDeleteUserCommandData;
-import org.example.DataContainers.ServerCommandData.ServerEmptyCommandData;
 import org.example.DataContainers.ServerCommandData.ServerLoginCommandData;
 
 import java.sql.SQLException;

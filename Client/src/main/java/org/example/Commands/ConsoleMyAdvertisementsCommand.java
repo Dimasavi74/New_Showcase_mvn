@@ -1,7 +1,6 @@
 package org.example.Commands;
 
 import org.example.DataContainers.AdvertisementWithIdData;
-import org.example.DataContainers.ServerCommandData.AbstractServerCommandData;
 import org.example.DataContainers.ServerCommandData.ServerCommandData;
 import org.example.DataContainers.ServerCommandData.ServerMyAdvertisementsCommandData;
 import org.example.Modules.ClientCommunicationModule;

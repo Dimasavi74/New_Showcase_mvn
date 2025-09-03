@@ -1,7 +1,6 @@
 package org.example.ServerCommands;
 
 import org.example.BdManager;
-import org.example.DataContainers.ServerCommandData.ServerCommandData;
 
 public abstract class AbstractServerCommand implements ServerCommand {
     protected transient BdManager bdManager;

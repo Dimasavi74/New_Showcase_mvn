@@ -54,10 +54,10 @@ public class ClientConsoleApp {
             String inputText;
 
             switch (properties.getInputMode()) {
-                case "singleLine":
+                case SINGLE_LINE:
                     inputText = inputModule.inputLine();
                     break;
-                case "multipleLines":
+                case MULTIPLE_LINES:
                     inputText = inputModule.inputMultipleLines();
                     break;
                 default:
@@ -66,7 +66,7 @@ public class ClientConsoleApp {
 
             Map<String, String> parsedText;
             switch (properties.getInputSyntax()) {
-                case "variableNames":
+                case VARIABLE_NAMES:
                     parsedText = this.parsingModule.parseVariableNamesSyntaxLine(inputText);
                     break;
                 default:
